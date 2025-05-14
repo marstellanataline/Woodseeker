@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>B2B - WOODSEEKER</title>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../assets/css/style.css" />
+    <link rel="stylesheet" href="../assets/css/admin.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+    <!-- EmailJS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="../assets/js/emailJS.js"></script>
+
+</head>
+<body>
+    <!-- Header -->
+    <div id="header-container"></div>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <section class="b2b-hero" style="background-image: url('../assets/images/fotodepanslide1.JPG');">
+        <div class="container">
+        <div class="b2b-heading">
+            <h1 class="bebas">WOODSEEKER</h1>
+            <h2 class="poppins">FOR BUSINESS</h2>
+        </div>
+            <p>
+            Partner with us to elevate your business with premium quality furniture solutions.
+            From office spaces to hospitality venues, we deliver excellence in every piece.
+            </p>
+        </div>
+        </section>
+
+        <!-- Benefits Section -->
+        <section class="b2b-benefits">
+        <div class="container">
+            <h2>Why Partner With Us?</h2>
+            <div class="benefits-grid">
+            <div class="benefit-card">
+                <i class="fas fa-medal"></i>
+                <h3>Premium Quality</h3>
+                <p>High-quality materials and craftsmanship in every piece we create</p>
+            </div>
+            <div class="benefit-card">
+                <i class="fas fa-truck"></i>
+                <h3>Reliable Delivery</h3>
+                <p>On-time delivery and professional installation services nationwide</p>
+            </div>
+            <div class="benefit-card">
+                <i class="fas fa-handshake"></i>
+                <h3>Dedicated Support</h3>
+                <p>Personal account manager to handle all your business needs</p>
+            </div>
+            <div class="benefit-card">
+                <i class="fas fa-percentage"></i>
+                <h3>Special Pricing</h3>
+                <p>Competitive wholesale prices and volume discounts</p>
+            </div>
+            </div>
+        </div>
+        </section>
+
+        <!-- Form Section -->
+        <section class="b2b-form-section">
+        <div class="container">
+            <h2>Request an Account</h2>
+            <form id="b2bForm" class="b2b-form" data-template-id="template_34xslbi">
+            <div class="form-group">
+                <label for="company">Company Name</label>
+                <input type="text" id="company" name="company" required placeholder="e.g., PT Maju Furniture Indonesia" />
+            </div>
+            <div class="form-group">
+                <label for="name">Contact Person</label>
+                <input type="text" id="name" name="name" required placeholder="e.g., Raihan Singh" />
+            </div>
+            <div class="form-group">
+                <label for="email">Business Email</label>
+                <input type="email" id="email" name="email" required placeholder="e.g., raihansingh@gmail.com" />
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone</label>
+                <input type="tel" id="phone" name="phone" required placeholder="e.g., +62 812-3456-7890" />
+            </div>
+            <div class="form-group">
+                <label for="website">Website (Optional)</label>
+                <input type="url" id="website" name="website" placeholder="e.g., https://www.yourcompany.com" />
+            </div>
+            <div class="form-group">
+                <label for="business-type">Business Type</label>
+                <select id="business-type" name="business-type" required>
+                <option value="">Select Business Type</option>
+                <option value="retail">Retail Store</option>
+                <option value="wholesale">Wholesale</option>
+                <option value="interior">Interior Design</option>
+                <option value="hospitality">Hospitality</option>
+                <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="message">Additional Information</label>
+                <textarea id="message" name="message" rows="4" placeholder="Tell us about your business needs, expected order volumes, or any specific requirements"></textarea>
+            </div>
+            <button type="submit">Submit Request</button>
+            <div id="formMessage" style="display: none;">Thank you for your submission. We'll be in touch soon!</div>
+            <div id="errorMessage" style="display: none;">Sorry, there was an error. Please try again.</div>
+            </form>
+        </div>
+        </section>
+    </main>
+
+  <!-- Footer -->
+  <div id="footer-container"></div>
+
+  <!-- Scripts -->
+  <script src="../assets/js/script.js"></script>
+  <script src="../assets/js/formHandlerB2B.js"></script>
+</body>
+</html>

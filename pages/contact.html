@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - WOODSEEKER</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function() {
+            // https://dashboard.emailjs.com/admin/account
+            emailjs.init("grK8Kfz77RI-X72cV");
+        })();
+    </script>
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
+    <style>
+        /* ... existing styles ... */
+
+        .map-container {
+            width: 100%;
+            height: 300px;
+            margin-top: 2rem;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+        }
+
+        .map-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Loading spinner */
+        .loading-spinner {
+            display: none;
+            margin-left: 8px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Success and error messages */
+        .form-message {
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .form-message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .form-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .submit-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-width: 140px;
+            padding: 0.75rem 1.5rem;
+        }
+
+        .submit-btn i {
+            margin: 0;
+        }
+
+        .reset-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .reset-btn i {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="header-container"></div>
+
+    <main>
+        <section class="contact-hero">
+            <div class="container">
+                <h1>Contact Us</h1>
+                <p>Have a question? Let’s connect — we’d love to hear from you</p>
+            </div>
+        </section>
+
+        <section class="contact" id="contact">
+            <div class="container">
+                <div class="contact-content">
+                    <div class="contact-form">
+                        <h3>Form Pemesanan</h3>
+                        <form id="contactForm">
+                            <div class="form-group">
+                                <label for="nama">Nama Lengkap <span class="required">*</span></label>
+                                <input type="text" id="nama" name="nama" required
+                                    placeholder="e.g., Raihan Singh">
+                                <small class="form-hint">Masukkan nama lengkap Anda sesuai identitas</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email <span class="required">*</span></label>
+                                <input type="email" id="email" name="email" required
+                                    placeholder="e.g., contoh@gmail.com">
+                                <small class="form-hint">Kami akan mengirimkan konfirmasi ke email ini</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Nomor Telepon <span class="required">*</span></label>
+                                <input type="tel" id="phone" name="phone" required
+                                    placeholder="e.g., +62 812-3456-7890">
+                                <small class="form-hint">Format: +62 8xx-xxxx-xxxx</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="namaProduk">Nama Produk <span class="required">*</span></label>
+                                <input type="text" id="namaProduk" name="namaProduk" required
+                                    placeholder="e.g., Meja Kerja">
+                                <small class="form-hint">Sesuai dengan nama di katalog produk</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="kategori">Kategori Produk</label>
+                                <select id="kategori" name="kategori">
+                                    <option value="">Pilih Kategori</option>
+                                    <option value="meja">Meja</option>
+                                    <option value="kursi">Kursi</option>
+                                    <option value="lemari">Lemari</option>
+                                    <option value="other">Lainnya</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="jumlah">Jumlah Unit</label>
+                                <div class="quantity-controls">
+                                    <button type="button" onclick="updateQuantity(-1)">-</button>
+                                    <input type="number" id="jumlah" name="jumlah" value="1" min="1">
+                                    <button type="button" onclick="updateQuantity(1)">+</button>
+                                </div>
+                                <small class="form-hint">Minimum pemesanan 1 unit</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="rincian">Rincian Produk <span class="required">*</span></label>
+                                <textarea id="rincian" name="rincian" rows="4" required
+                                    placeholder="Deskripsikan detail pesanan Anda seperti:&#10;- Warna yang diinginkan&#10;- Ukuran khusus (jika ada)&#10;- Catatan tambahan"></textarea>
+                                <small class="form-hint">Berikan detail spesifik untuk pesanan Anda</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="alamat">Alamat Pengiriman</label>
+                                <textarea id="alamat" name="alamat" rows="3"
+                                    placeholder="Format:&#10;Nama Jalan, Nomor&#10;Kota, Kode Pos"></textarea>
+                                <small class="form-hint">Alamat lengkap untuk pengiriman</small>
+                            </div>
+                            <div class="form-message success" id="successMessage">
+                                Pesan Anda telah berhasil terkirim! Kami akan menghubungi Anda segera.
+                            </div>
+                            <div class="form-message error" id="errorMessage">
+                                Maaf, terjadi kesalahan saat mengirim pesan. Silakan coba lagi.
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="submit-btn" id="submitBtn">
+                                    <i class="fas fa-paper-plane"></i> Send Now
+                                    <i class="fas fa-spinner loading-spinner" id="loadingSpinner"></i>
+                                </button>
+                                <button type="reset" class="reset-btn">
+                                    <i class="fas fa-redo"></i> Reset Form
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="contact-info">
+                        <h3>Get In Touch</h3>
+                        <p>Need solutions for household decors? Feel the direct touch, connect with trusted solution, and scale your business efficiently.</p>
+                        
+                        <div class="contact-details">
+                            <div class="contact-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <div>
+                                    <h4>Address</h4>
+                                    <p>Raya Sukaraja No.16<br>Kabupaten Bogor, Negara Indonesia<br>Kode Pos 16770</p>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-phone"></i>
+                                <div>
+                                    <h4>Phone</h4>
+                                    <p>WhatsApp:<br>+62 812 8607 6677</p>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <div>
+                                    <h4>Email</h4>
+                                    <p>General Inquiries:<br>raihansingh@gmail.com</p>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-clock"></i>
+                                <div>
+                                    <h4>Business Hours</h4>
+                                    <p>Monday - Friday: 09:00 - 17:00<br>Saturday: 09:00 - 15:00<br>Sunday: Closed</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="social-links">
+                            <h4>Follow Us</h4>
+                            <div class="social-icons">
+                                <a href="https://www.instagram.com/woodseekerr?igsh=MXJ5Ym9uaXJ3cHg1Mg==" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                                <a href="https://www.tokopedia.com/woodseeker?fbclid=PAQ0xDSwKFbAxleHRuA2FlbQIxMQABp7FkLfBrtjlxhmdGNeXx14fC7eo-uusixltfA9Qx2dFWNLfOp1tVtz6fETdL_aem_jJh6KXA5OQGUx15usGqc4w" title="Tokopedia" target="_blank"><i class="fa-solid fa-store"></i></a>
+                                <a href="https://www.tiktok.com/@woodseekerr?_t=ZS-8w6CUeFMh6d&_r=1" title="TikTok" target="_blank"><i class="fa-brands fa-tiktok"></i></a>
+                            </div>
+                        </div>
+
+                        <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15854.178242192022!2d106.8557194!3d-6.6453089!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69c88c970a4fdb%3A0xb22604f6f5e0142d!2sJl.+Raya+Sukaraja+No.16,+Cipayung+Datar,+Kec.+Megamendung,+Kabupaten+Bogor,+Jawa+Barat+16770!5e0!3m2!1sid!2sid!4v1753415288701"
+                        width="600" 
+                        height="450" 
+                        style="border:0;" 
+                        allowfullscreen 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="footer-container"></div>
+
+    <script src="../assets/js/script.js"></script>
+    <script src="../assets/js/formHandlerContact.js"></script>
+</body>
+</html>

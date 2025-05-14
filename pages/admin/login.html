@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Woodseeker</title>
+    <link rel="stylesheet" href="../../assets/css/admin.css">
+    <style>
+        body {
+            background-color: #f5f2f0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            max-width: 320px;
+            width: 100%;
+            padding: 0rem;
+            text-align: center;
+        }
+
+        .login-logo img {
+            width: 180px;
+            height: 180px;
+        }
+
+        .login-box {
+            background: rgb(193, 170, 170);
+            border: 1px solid #d4ccc5;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            padding: 1.5rem;
+            margin-top: 1rem;
+            border-radius: 4px;
+        }
+
+        .login-message {
+            color: #4A3728;
+            font-size: 14px;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            color: #4A3728;
+            font-size: 14px;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.25rem 0.5rem;
+            font-size: 1rem;
+            line-height: 2;
+            border: 1px solid #d4ccc5;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            border-color: #4A3728;
+            box-shadow: 0 0 0 1px #4A3728;
+            outline: none;
+        }
+
+        .password-toggle {
+            position: relative;
+        }
+
+        .password-toggle .toggle-password {
+            position: absolute;
+            right: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #4A3728;
+            cursor: pointer;
+            padding: 0.25rem;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            margin: 1rem 0;
+        }
+
+        .remember-me input[type="checkbox"] {
+            margin-right: 0.5rem;
+        }
+
+        .remember-me label {
+            color: #4A3728;
+            font-size: 13px;
+        }
+
+        .login-btn {
+            background: #4A3728;
+            border: 1px solid #4A3728;
+            color: white;
+            padding: 0.25rem 1rem;
+            font-size: 13px;
+            line-height: 2;
+            border-radius: 3px;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .login-btn:hover {
+            background: #3a2c20;
+            border-color: #3a2c20;
+        }
+
+        .back-to-home {
+            color: #4A3728;
+            text-decoration: none;
+            font-size: 13px;
+            display: inline-block;
+            margin-top: 1rem;
+        }
+
+        .back-to-home:hover {
+            color: #3a2c20;
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background: #fcf0f1;
+            color: #d63638;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #d63638;
+            font-size: 13px;
+            text-align: left;
+            display: none;
+        }
+
+        .forgot-password {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .forgot-link {
+            color: #4A3728;
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .forgot-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-logo">
+            <img src="../../assets/images/logo.png" alt="Woodseeker Logo">
+        </div>
+        <div class="login-box">
+            <div class="error-message" id="loginError">
+                Email atau password salah. Silakan coba lagi.
+            </div>
+            <p class="login-message">Anda telah log keluar.</p>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Nama Pengguna atau Alamat Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Sandi</label>
+                    <div class="password-toggle">
+                        <input type="password" id="password" name="password" required>
+                        <button type="button" class="toggle-password" onclick="togglePassword()">
+                            <i class="far fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="remember-me">
+                    <input type="checkbox" id="rememberMe" name="rememberMe">
+                    <label for="rememberMe">Ingat Saya</label>
+                </div>
+                <button type="submit" class="login-btn">Login</button>
+                <div class="forgot-password">
+                    <a href="forgot-password.html" class="forgot-link">Lupa Password?</a>
+                </div>
+            </form>
+        </div>
+        <a href="../../index.html" class="back-to-home">← Kembali ke laman utama</a>
+    </div>
+
+    <script>
+        // Handle form submission
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const rememberMe = document.getElementById('rememberMe').checked;
+            const errorElement = document.getElementById('loginError');
+            
+            // Get stored password or use default
+            const storedPassword = localStorage.getItem('adminPassword') || 'raihan567';
+
+            // Validate credentials
+            if (email === 'raihan@woodseeker.com' && password === storedPassword) {
+                // Create session
+                const session = {
+                    email: email,
+                    timestamp: new Date().getTime()
+                };
+                
+                localStorage.setItem('adminSession', JSON.stringify(session));
+                
+                if (rememberMe) {
+                    localStorage.setItem('rememberedEmail', email);
+                } else {
+                    localStorage.removeItem('rememberedEmail');
+                }
+
+                // Redirect to dashboard
+                window.location.href = 'dashboard.html';
+            } else {
+                errorElement.textContent = 'Email atau password salah. Silakan coba lagi.';
+                errorElement.style.display = 'block';
+            }
+        });
+
+        // Check for remembered email
+        window.addEventListener('load', function() {
+            const rememberedEmail = localStorage.getItem('rememberedEmail');
+            if (rememberedEmail) {
+                document.getElementById('email').value = rememberedEmail;
+                document.getElementById('email').focus();
+                document.getElementById('rememberMe').checked = true;
+            }
+        });
+
+        // Check if user is already logged in
+        function checkSession() {
+            const session = localStorage.getItem('adminSession');
+            if (session) {
+                try {
+                    const sessionData = JSON.parse(session);
+                    const now = new Date().getTime();
+                    
+                    if (now - sessionData.timestamp <= 24 * 60 * 60 * 1000) {
+                        window.location.replace('dashboard.html');
+                        return;
+                    }
+                } catch (e) {
+                    localStorage.removeItem('adminSession');
+                }
+            }
+        }
+
+        // Initialize
+        checkSession();
+
+        // Toggle password visibility
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleBtn = document.querySelector('.toggle-password i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleBtn.classList.remove('fa-eye');
+                toggleBtn.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleBtn.classList.remove('fa-eye-slash');
+                toggleBtn.classList.add('fa-eye');
+            }
+        }
+    </script>
+
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</body>
+</html> 

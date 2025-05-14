@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Catalog - WOODSEEKER</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+  <link rel="stylesheet" href="../assets/css/admin.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+</head>
+<body>
+  <div id="header-container"></div>
+
+  <main>
+    <section class="catalog-header">
+      <div class="container">
+        <h1>Our Products</h1>
+        <div class="catalog-filters">
+          <select id="category-filter">
+            <option value="">All Categories</option>
+            <option value="meja">Meja</option>
+            <option value="kursi">Kursi</option>
+            <option value="lemari">Lemari</option>
+          </select>
+          <div class="search-box">
+            <input type="text" placeholder="Search products..." />
+            <button><i class="fas fa-search"></i></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="catalog" id="catalog">
+      <div class="container">
+        <div class="category-grid">
+          <!-- Products will be loaded dynamically from products.json -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="footer-container"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script src="../assets/js/emailJS.js"></script>
+  <script src="../assets/js/script.js"></script>
+
+  <script>
+    let currentCategory = '';
+    let currentSearch = '';
+    let allProducts = [];
+
+    document.addEventListener('DOMContentLoaded', function () {
+      loadComponent('../components/header.html', 'header-container');
+      loadComponent('../components/footer.html', 'footer-container');
+      loadProducts();
+
+      document.getElementById('category-filter').addEventListener('change', function () {
+        currentCategory = this.value.toLowerCase();
+        filterAndRender();
+      });
+
+      document.querySelector('.search-box input').addEventListener('input', function () {
+        currentSearch = this.value.toLowerCase();
+        filterAndRender();
+      });
+    });
+
+    async function loadProducts() {
+      try {
+        const response = await fetch('../data/products.json');
+        const data = await response.json();
+        allProducts = data.categories;
+        filterAndRender();
+      } catch (error) {
+        console.error('Error loading products:', error);
+      }
+    }
+
+    function filterAndRender() {
+      const grid = document.querySelector('.category-grid');
+      grid.innerHTML = '';
+
+      allProducts.forEach(category => {
+        const isCategoryMatch = !currentCategory || category.id === currentCategory;
+
+        if (isCategoryMatch) {
+          category.products.forEach(product => {
+            const nameMatch = product.name.toLowerCase().includes(currentSearch);
+            if (nameMatch) {
+              const card = createProductCard(product, category.id);
+              grid.appendChild(card);
+            }
+          });
+        }
+      });
+
+      if (grid.children.length === 0) {
+        grid.innerHTML = '<p class="no-results">No products found.</p>';
+      }
+    }
+
+    function createProductCard(product, categoryId) {
+      const card = document.createElement('div');
+      card.className = 'category-card';
+      card.innerHTML = `
+        <img src="../assets/images/${product.image}" alt="${product.name}">
+        <div class="card-content">
+          <h3>${product.name}</h3>
+          <p class="price">Rp ${product.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}</p>
+          <div class="color-options">
+            ${product.colors.map(color => `<span class="color-dot ${color}"></span>`).join('')}
+          </div>
+          <details class="product-details">
+            <summary>View Details</summary>
+            <div class="details-content">
+              <div class="specs">
+                <h4>Specifications</h4>
+                <ul>
+                  <li><strong>Material:</strong> ${product.material || 'Solid Wood'}</li>
+                  <li><strong>Dimensions:</strong> ${product.dimensions 
+                    ? `${product.dimensions.width}cm x ${product.dimensions.depth}cm x ${product.dimensions.height}cm`
+                    : 'N/A'}</li>
+                  <li><strong>Weight:</strong> ${product.weight || 'N/A'}</li>
+                </ul>
+              </div>
+              <p class="description">${product.description}</p>
+              <div class="stock-info">
+                <span class="stock-status ${product.stock > 0 ? 'in-stock' : 'out-of-stock'}">
+                  ${product.stock > 0 ? 'In Stock' : 'Out of Stock'}
+                </span>
+                <span class="delivery-time">Estimated Delivery: 3-5 days</span>
+              </div>
+            </div>
+          </details>
+          <a href="product-detail.html?id=${product.id}" class="view-details">View Full Details</a>
+        </div>
+      `;
+
+      const details = card.querySelector('details');
+      details.addEventListener('toggle', function () {
+        if (this.open) {
+          setTimeout(() => {
+            this.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }, 100);
+        }
+      });
+
+      return card;
+    }
+  </script>
+</body>
+</html>
