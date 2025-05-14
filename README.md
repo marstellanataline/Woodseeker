@@ -9,18 +9,21 @@ woodseeker/
 ├── assets/
 │   ├── css/
 │   │   ├── admin.css
+│   │   ├── dashboard.css
+│   │   ├── forgot.css
 │   │   └── style.css
 │   ├── js/
+│   │   ├── dashboard.js
+│   │   ├── emailJS.js
+│   │   ├── formHandlerB2B.js
+│   │   ├── formHandlerContact.js
 │   │   └── script.js
 │   └── images/
 ├── components/
 │   ├── header.html
 │   ├── footer.html
 │   ├── hero.html
-│   ├── about.html
 │   ├── catalog.html
-│   ├── b2b.html
-│   ├── contact.html
 ├── config/
 │   └── app.config.js
 ├── data/
