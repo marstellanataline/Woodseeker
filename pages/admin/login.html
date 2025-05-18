@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link rel="stylesheet" href="../../assets/css/admin.css">
     <link rel="stylesheet" href="../../assets/css/login.css">
 </head>
+
 <body>
     <div class="login-container">
         <div class="login-logo">
@@ -46,43 +48,58 @@
 
     <script>
         // Handle form submission
-        document.getElementById('loginForm').addEventListener('submit', function(event) {
+        document.getElementById('loginForm').addEventListener('submit', async function (event) {
             event.preventDefault();
-            
+
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value.trim();
             const rememberMe = document.getElementById('rememberMe').checked;
             const errorElement = document.getElementById('loginError');
-            
-            // Get stored password or use default
-            const storedPassword = localStorage.getItem('adminPassword') || 'raihan567';
 
-            // Validate credentials
-            if (email === 'raihan@woodseeker.com' && password === storedPassword) {
-                // Create session
-                const session = {
-                    email: email,
-                    timestamp: new Date().getTime()
-                };
-                
-                localStorage.setItem('adminSession', JSON.stringify(session));
-                
-                if (rememberMe) {
-                    localStorage.setItem('rememberedEmail', email);
+            try {
+                const res = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.token) {
+                            localStorage.setItem('token', data.token);
+                            window.location.replace('dashboard.html');
+                        } else {
+                            alert(data.error || 'Login gagal');
+                        }
+                    });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    // Simpan token dari backend
+                    localStorage.setItem('token', data.token);
+
+                    // Simpan email kalau "ingat saya" dicentang
+                    if (rememberMe) {
+                        localStorage.setItem('rememberedEmail', email);
+                    } else {
+                        localStorage.removeItem('rememberedEmail');
+                    }
+
+                    // Redirect ke dashboard
+                    window.location.href = 'dashboard.html';
                 } else {
-                    localStorage.removeItem('rememberedEmail');
+                    errorElement.textContent = data.error || 'Login gagal.';
+                    errorElement.style.display = 'block';
                 }
-
-                // Redirect to dashboard
-                window.location.href = 'dashboard.html';
-            } else {
-                errorElement.textContent = 'Email atau password salah. Silakan coba lagi.';
+            } catch (err) {
+                console.error(err);
+                errorElement.textContent = 'Gagal koneksi ke server.';
                 errorElement.style.display = 'block';
             }
         });
 
         // Check for remembered email
-        window.addEventListener('load', function() {
+        window.addEventListener('load', function () {
             const rememberedEmail = localStorage.getItem('rememberedEmail');
             if (rememberedEmail) {
                 document.getElementById('email').value = rememberedEmail;
@@ -91,21 +108,11 @@
             }
         });
 
-        // Check if user is already logged in
+        // Cek apakah sudah login (sudah ada token)
         function checkSession() {
-            const session = localStorage.getItem('adminSession');
-            if (session) {
-                try {
-                    const sessionData = JSON.parse(session);
-                    const now = new Date().getTime();
-                    
-                    if (now - sessionData.timestamp <= 24 * 60 * 60 * 1000) {
-                        window.location.replace('dashboard.html');
-                        return;
-                    }
-                } catch (e) {
-                    localStorage.removeItem('adminSession');
-                }
+            const token = localStorage.getItem('token');
+            if (token) {
+                window.location.replace('dashboard.html');
             }
         }
 
@@ -116,7 +123,7 @@
         function togglePassword() {
             const passwordInput = document.getElementById('password');
             const toggleBtn = document.querySelector('.toggle-password i');
-            
+
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 toggleBtn.classList.remove('fa-eye');
@@ -132,4 +139,5 @@
     <!-- Add Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </body>
-</html> 
+
+</html>

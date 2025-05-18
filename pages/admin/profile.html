@@ -114,33 +114,41 @@
 
     <script>
         // Check authentication
-        function checkAuth() {
-            const session = localStorage.getItem('adminSession');
-            if (!session) {
+        window.onload = checkAuth;
+        async function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
                 window.location.replace('login.html');
                 return;
             }
 
             try {
-                const sessionData = JSON.parse(session);
-                const now = new Date().getTime();
+                const res = await fetch('http://localhost:3000/api/auth/verify', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
 
-                if (now - sessionData.timestamp > 24 * 60 * 60 * 1000) {
-                    localStorage.removeItem('adminSession');
+                if (!res.ok) {
+                    localStorage.removeItem('token');
                     window.location.replace('login.html');
                     return;
                 }
 
-                document.getElementById('adminEmail').textContent = sessionData.email;
+                const data = await res.json();
+                const email = data.user?.email || 'Admin';
+                document.getElementById('adminEmail').textContent = email;
+
             } catch (e) {
-                localStorage.removeItem('adminSession');
+                console.error(e);
+                localStorage.removeItem('token');
                 window.location.replace('login.html');
             }
         }
 
         // Handle logout
         function handleLogout() {
-            localStorage.removeItem('adminSession');
+            localStorage.removeItem('token');
             window.location.replace('login.html');
         }
 
