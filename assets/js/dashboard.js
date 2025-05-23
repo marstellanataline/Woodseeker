@@ -4,7 +4,11 @@ let hasUnsavedChanges = false;
 const originalData = { categories: [] };
 
 // Check authentication
-window.onload = checkAuth;
+window.onload = () => {
+    checkAuth();
+    loadProducts();
+}
+
 async function checkAuth() {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -73,7 +77,7 @@ function handleLogout() {
     window.location.replace('login.html');
 }
 
-// Load products with sections
+// Load products from backend API, group by category, and display them
 async function loadProducts() {
     try {
         const listedGrid = document.getElementById('listedProductGrid');
@@ -82,20 +86,34 @@ async function loadProducts() {
         listedGrid.innerHTML = '';
         unlistedGrid.innerHTML = '';
 
-        if (!window.productsData) {
-            const savedData = localStorage.getItem('productsData');
-            if (savedData) {
-                window.productsData = JSON.parse(savedData);
-            } else {
-                const response = await fetch('../../data/products.json');
-                window.productsData = await response.json();
-            }
-        }
+        const response = await fetch('/api/products');
+        if (!response.ok) throw new Error('Gagal mengambil data produk dari server.');
 
+        const products = await response.json();
+
+        // Group products by category_name
+        const grouped = {};
+        products.forEach(product => {
+            const category = product.category_name || 'Lainnya';
+            if (!grouped[category]) {
+                grouped[category] = [];
+            }
+            grouped[category].push(product);
+        });
+
+        // Simpan data global agar bisa dibandingkan nanti jika diedit
+        window.productsData = {
+            categories: Object.entries(grouped).map(([categoryName, products]) => ({
+                name: categoryName,
+                products
+            }))
+        };
+
+        // Tampilkan kartu produk ke dalam grid yang sesuai
         window.productsData.categories.forEach(category => {
             category.products.forEach(product => {
                 const card = createProductCard(product, category.name);
-                if (product.listed) {
+                if (product.status === 'published') {
                     listedGrid.appendChild(card);
                 } else {
                     unlistedGrid.appendChild(card);
@@ -103,12 +121,8 @@ async function loadProducts() {
             });
         });
 
-        // Check if current state differs from original
-        const currentState = JSON.stringify(window.productsData);
-        const originalState = JSON.stringify({ categories: originalData.categories });
-        if (currentState !== originalState) {
-            markUnsavedChanges();
-        }
+        // Simpan data awal untuk deteksi perubahan (jika perlu)
+        window.originalData = JSON.parse(JSON.stringify(window.productsData));
     } catch (error) {
         console.error('Error loading products:', error);
     }
@@ -123,46 +137,49 @@ function formatPrice(price) {
 function createProductCard(product, category) {
     const card = document.createElement('div');
     card.className = 'product-card';
-    card.setAttribute('data-product-id', product.id);
+    card.setAttribute('data-product-id', product.product_id);
+
+    const isListed = product.status === 'published';
+
     card.innerHTML = `
-                <img src="../../assets/images/${product.image}" alt="${product.name}" class="product-image">
-                <div class="product-content">
-                    <div class="product-header">
-                        <h3 class="product-title">${product.name}</h3>
-                        <span class="status-badge ${product.listed ? 'listed' : 'unlisted'}">
-                            ${product.listed ? 'Ditampilkan di Web' : 'Draf'}
-                        </span>
-                    </div>
-                    <div class="product-category">${category}</div>
-                    <div class="product-price">Rp ${formatPrice(product.price)}</div>
-                    <div class="product-actions">
-                        <div class="action-row">
-                            <button class="action-btn edit-btn" onclick="editProduct('${product.id}')">
-                                <i class="fas fa-edit"></i>
-                                Edit
-                            </button>
-                            <button class="toggle-list-btn ${product.listed ? 'unlist' : 'list'}" 
-                                    onclick="toggleProductListing('${product.id}', ${!product.listed})">
-                                <i class="fas fa-${product.listed ? 'eye-slash' : 'eye'}"></i>
-                                ${product.listed ? 'Sembunyikan' : 'Tampilkan'}
-                            </button>
-                        </div>
-                        <button class="action-btn delete-btn" onclick="deleteProduct('${product.id}')">
-                            <i class="fas fa-trash"></i>
-                            Hapus
-                        </button>
-                    </div>
+        <img src="../../assets/images/${product.image}" alt="${product.name}" class="product-image">
+        <div class="product-content">
+            <div class="product-header">
+                <h3 class="product-title">${product.name}</h3>
+                <span class="status-badge ${isListed ? 'listed' : 'unlisted'}">
+                    ${isListed ? 'Ditampilkan di Web' : 'Draf'}
+                </span>
+            </div>
+            <div class="product-category">${category}</div>
+            <div class="product-price">Rp ${formatPrice(product.price)}</div>
+            <div class="product-actions">
+                <div class="action-row">
+                    <button class="action-btn edit-btn" onclick="editProduct('${product.product_id}')">
+                        <i class="fas fa-edit"></i>
+                        Edit
+                    </button>
+                    <button class="toggle-list-btn ${isListed ? 'unlist' : 'list'}" 
+                            onclick="toggleProductListing('${product.product_id}', ${!isListed})">
+                        <i class="fas fa-${isListed ? 'eye-slash' : 'eye'}"></i>
+                        ${isListed ? 'Sembunyikan' : 'Tampilkan'}
+                    </button>
                 </div>
-            `;
+                <button class="action-btn delete-btn" onclick="deleteProduct('${product.product_id}')">
+                    <i class="fas fa-trash"></i>
+                    Hapus
+                </button>
+            </div>
+        </div>
+    `;
+
     return card;
 }
 
 // Product actions
-function addProduct() {
-    // Tampilkan modal tambah produk
-    document.getElementById('addProductModal').classList.add('show');
+async function addProduct() {
+    const modal = document.getElementById('addProductModal');
+    modal.classList.add('show');
 
-    // Reset form dan preview gambar
     const form = document.getElementById('addProductForm');
     form.reset();
 
@@ -170,20 +187,110 @@ function addProduct() {
     preview.style.backgroundImage = '';
     preview.classList.add('empty');
 
-    // Reset warna yang dipilih
     colors = [];
     updateColorList();
+
+    form.onsubmit = async function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+        formData.append('selectedColors', JSON.stringify(colors)); // Kirim warna dalam array
+
+        try {
+            const response = await fetch('/api/products', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                alert('Produk berhasil ditambahkan.');
+                modal.classList.remove('show');
+                await loadProducts(); // Refresh tampilan
+            } else {
+                const result = await response.json();
+                alert('Gagal menambahkan produk: ' + result.message);
+            }
+        } catch (err) {
+            console.error('Error adding product:', err);
+            alert('Terjadi kesalahan saat menambahkan produk.');
+        }
+    };
 }
 
-function editProduct(id) {
-    // Implement edit product functionality
-    console.log('Editing product:', id);
+async function editProduct(id) {
+    try {
+        const response = await fetch(`/api/products/${id}`);
+        const product = await response.json();
+
+        // Isi modal edit dengan data produk
+        const modal = document.getElementById('editProductModal');
+        modal.classList.add('show');
+
+        const form = document.getElementById('editProductForm');
+        form.product_id.value = product.product_id;
+        form.name.value = product.name;
+        form.price.value = product.price;
+        form.stock.value = product.stock;
+        form.description.value = product.description;
+        form.category_id.value = product.category_id;
+
+        // Update preview gambar
+        const preview = document.getElementById('editImagePreview');
+        preview.style.backgroundImage = `url('../../assets/images/${product.image}')`;
+        preview.classList.remove('empty');
+
+        colors = product.colors || [];
+        updateEditColorList();
+
+        // Submit handler
+        form.onsubmit = async function (e) {
+            e.preventDefault();
+            const formData = new FormData(form);
+            formData.append('selectedColors', JSON.stringify(colors));
+
+            try {
+                const updateRes = await fetch(`/api/products/${id}`, {
+                    method: 'PUT',
+                    body: formData
+                });
+
+                if (updateRes.ok) {
+                    alert('Produk berhasil diupdate.');
+                    modal.classList.remove('show');
+                    await loadProducts();
+                } else {
+                    const result = await updateRes.json();
+                    alert('Gagal mengupdate produk: ' + result.message);
+                }
+            } catch (err) {
+                console.error('Error updating product:', err);
+                alert('Terjadi kesalahan saat mengupdate produk.');
+            }
+        };
+
+    } catch (err) {
+        console.error('Gagal mengambil data produk untuk edit:', err);
+    }
 }
 
-function deleteProduct(id) {
+async function deleteProduct(id) {
     if (confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
-        // Implement delete product functionality
-        console.log('Deleting product:', id);
+        try {
+            const response = await fetch(`/api/products/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                alert('Produk berhasil dihapus.');
+                await loadProducts(); // Refresh tampilan
+            } else {
+                const result = await response.json();
+                alert('Gagal menghapus produk: ' + result.message);
+            }
+        } catch (err) {
+            console.error('Error deleting product:', err);
+            alert('Terjadi kesalahan saat menghapus produk.');
+        }
     }
 }
 
@@ -297,52 +404,46 @@ function switchSection(section) {
 // Toggle product listing status
 async function toggleProductListing(productId, newListedStatus) {
     try {
-        if (!window.productsData) {
-            throw new Error('Products data not loaded');
-        }
-
-        let productFound = false;
-        window.productsData.categories.forEach(category => {
-            category.products.forEach(product => {
-                if (product.id === productId) {
-                    product.listed = newListedStatus;
-                    productFound = true;
-                }
-            });
+        const response = await fetch(`/api/products/${productId}/listing`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ listed: newListedStatus })
         });
 
-        if (!productFound) {
-            throw new Error('Product not found');
+        if (!response.ok) {
+            const result = await response.json();
+            throw new Error(result.message || 'Gagal memperbarui status listing');
         }
 
-        // Remove the product card from DOM
+        // Hapus kartu produk lama dari DOM
         const card = document.querySelector(`[data-product-id="${productId}"]`);
-        if (card) {
-            card.remove();
-        }
+        if (card) card.remove();
 
-        // Create new card in the appropriate section
-        const product = findProduct(productId);
-        if (product) {
-            const newCard = createProductCard(product.product, product.category);
-            const targetGrid = newListedStatus ?
-                document.getElementById('listedProductGrid') :
-                document.getElementById('unlistedProductGrid');
-            targetGrid.appendChild(newCard);
-        }
+        // Ambil data produk yang baru
+        const updatedProductRes = await fetch(`/api/products/${productId}`);
+        const updatedProduct = await updatedProductRes.json();
 
-        // Switch to the appropriate section
+        // Tambahkan kartu baru ke lokasi yang sesuai
+        const targetGrid = newListedStatus
+            ? document.getElementById('listedProductGrid')
+            : document.getElementById('unlistedProductGrid');
+
+        const categoryData = await fetch(`/api/categories/${updatedProduct.category_id}`).then(res => res.json());
+        const categoryName = categoryData.category_name || categoryData.name || 'Lainnya';
+        const newCard = createProductCard(updatedProduct, categoryName);
+        targetGrid.appendChild(newCard);
+
         switchSection(newListedStatus ? 'listed' : 'unlisted');
 
-        // Mark changes as unsaved
         markUnsavedChanges();
 
-        // Show success message
-        const message = newListedStatus ?
-            'Produk berhasil dipindahkan ke Ditampilkan' :
-            'Produk berhasil dipindahkan ke Disembunyikan';
-        alert(message);
+        const message = newListedStatus
+            ? 'Produk berhasil dipindahkan ke Ditampilkan'
+            : 'Produk berhasil dipindahkan ke Disembunyikan';
 
+        alert(message);
     } catch (error) {
         console.error('Error toggling product listing:', error);
         alert('Gagal memindahkan produk. Silakan coba lagi.');
@@ -364,35 +465,41 @@ function findProduct(productId) {
 function saveProduct() {
     const form = document.getElementById('addProductForm');
     if (form.checkValidity()) {
-        // Generate a unique ID for the new product
         const newProductId = 'product_' + new Date().getTime();
 
-        // Get the file name from the file input
         const fileInput = document.getElementById('productImage');
         const fileName = fileInput.files[0] ? fileInput.files[0].name : '';
 
+        const name = document.getElementById('productName').value.trim();
+        const price = parseInt(document.getElementById('productPrice').value);
+        const description = document.getElementById('productDescription').value.trim();
+        const category = document.getElementById('productCategory').value.trim();
+
+        // Validasi tambahan
+        if (!name || isNaN(price) || price < 0 || !category) {
+            alert('Mohon isi semua data dengan benar.');
+            return;
+        }
+
         const productData = {
             id: newProductId,
-            name: document.getElementById('productName').value,
-            price: parseInt(document.getElementById('productPrice').value),
+            name,
+            price,
             image: fileName,
-            colors: colors,
-            description: document.getElementById('productDescription').value,
-            listed: false // New products are unlisted by default
+            colors: [...selectedColors], // Hindari referensi langsung
+            description,
+            listed: false
         };
 
-        // Find the category in productsData and add the new product
-        const category = document.getElementById('productCategory').value;
         let categoryFound = false;
-
-        window.productsData.categories.forEach(cat => {
+        for (const cat of window.productsData.categories) {
             if (cat.name === category) {
-                categoryFound = true;
                 cat.products.push(productData);
+                categoryFound = true;
+                break;
             }
-        });
+        }
 
-        // If category doesn't exist, create it
         if (!categoryFound) {
             window.productsData.categories.push({
                 name: category,
@@ -400,7 +507,11 @@ function saveProduct() {
             });
         }
 
-        // Update UI
+        // Reset form dan UI
+        form.reset();
+        selectedColors = [];
+        updateColorList();
+
         loadProducts();
         closeAddProductModal();
         switchSection('unlisted');
@@ -439,7 +550,7 @@ function editProduct(productId) {
 
     // Show current image
     const editImagePreview = document.getElementById('editImagePreview');
-    editImagePreview.style.backgroundImage = `url(../../assets/images/${product.product.image})`;
+    editImagePreview.style.backgroundImage = `url(${product.product.image})`;
     editImagePreview.classList.remove('empty');
 
     // Show modal
@@ -523,13 +634,47 @@ function saveEditProduct() {
         };
 
         // Update product in data
-        window.productsData.categories.forEach(category => {
-            category.products.forEach(product => {
-                if (product.id === productId) {
-                    Object.assign(product, productData);
+        // Kirim data ke backend
+        const formData = new FormData();
+        formData.append('id', productData.id);
+        formData.append('name', productData.name);
+        formData.append('category', productData.category);
+        formData.append('price', productData.price);
+        formData.append('description', productData.description);
+        formData.append('colors', JSON.stringify(productData.colors)); // karena array
+        if (productData.image instanceof File) {
+            formData.append('image', productData.image); // jika user upload gambar baru
+        } else {
+            formData.append('existingImage', productData.image); // untuk jaga-jaga gambar lama
+        }
+
+        // Misal endpoint backend untuk edit: /api/products/:id
+        fetch(`/api/products/${productId}`, {
+            method: 'POST', // atau 'PUT' / 'PATCH' sesuai backend kamu
+            body: formData
+        })
+            .then(response => {
+                if (!response.ok) throw new Error('Gagal update produk');
+                return response.json();
+            })
+            .then(updatedProduct => {
+                // Opsional: update local data (kalau perlu)
+                const category = window.productsData.categories.find(c => c.name === updatedProduct.category);
+                if (category) {
+                    const index = category.products.findIndex(p => p.id === updatedProduct.id);
+                    if (index !== -1) {
+                        category.products[index] = updatedProduct;
+                    }
                 }
+
+                closeEditProductModal();
+                alert('Produk berhasil diperbarui!');
+                loadProducts();
+            })
+            .catch(error => {
+                console.error('Error updating product:', error);
+                alert('Terjadi kesalahan saat memperbarui produk.');
             });
-        });
 
         console.log('Saving edited product:', productData);
         closeEditProductModal();
@@ -555,17 +700,33 @@ function deleteProduct(productId) {
     if (confirm('Apakah Anda yakin ingin memindahkan produk ini ke tempat sampah?')) {
         const product = findProduct(productId);
         if (product) {
-            // Remove from current data
-            window.productsData.categories.forEach(category => {
-                category.products = category.products.filter(p => p.id !== productId);
-            });
+            fetch(`/api/products/${productId}`, {
+                method: 'DELETE'
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Gagal memindahkan produk');
+                    return response.json(); // misal responsenya berupa data produk yang dihapus
+                })
+                .then(deletedProduct => {
+                    // Simpan ke trash lokal (opsional)
+                    window.trashedProducts.push({
+                        ...deletedProduct,
+                        deletedAt: new Date().getTime()
+                    });
 
-            // Add to trash with timestamp
-            window.trashedProducts.push({
-                ...product.product,
-                category: product.category,
-                deletedAt: new Date().getTime()
-            });
+                    // Hapus dari productsData
+                    window.productsData.categories.forEach(category => {
+                        category.products = category.products.filter(p => p.id !== productId);
+                    });
+
+                    loadProducts();
+                    updateTrashCount();
+                    alert('Produk telah dipindahkan ke tempat sampah');
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert('Terjadi kesalahan saat menghapus produk');
+                });
 
             // Update UI
             loadProducts();
@@ -616,25 +777,32 @@ function restoreProduct(productId) {
     if (productIndex !== -1) {
         const product = window.trashedProducts[productIndex];
 
-        // Remove from trash
-        window.trashedProducts.splice(productIndex, 1);
+        fetch(`/api/products/${productId}/restore`, {
+            method: 'PATCH'
+        })
+            .then(response => {
+                if (!response.ok) throw new Error('Gagal mengembalikan produk');
+                return response.json();
+            })
+            .then(restoredProduct => {
+                // Hapus dari trash lokal
+                window.trashedProducts.splice(productIndex, 1);
 
-        // Add back to appropriate category
-        let categoryFound = false;
-        window.productsData.categories.forEach(category => {
-            if (category.name === product.category) {
-                categoryFound = true;
-                category.products.push({
-                    id: product.id,
-                    name: product.name,
-                    price: product.price,
-                    image: product.image,
-                    colors: product.colors,
-                    description: product.description,
-                    listed: false // Restored products go to unlisted by default
-                });
-            }
-        });
+                // Tambahkan kembali ke data
+                const category = window.productsData.categories.find(c => c.name === restoredProduct.category);
+                if (category) {
+                    category.products.push(restoredProduct);
+                }
+
+                loadProducts();
+                loadTrashProducts();
+                updateTrashCount();
+                alert('Produk berhasil dikembalikan ke Disembunyikan');
+            })
+            .catch(error => {
+                console.error(error);
+                alert('Terjadi kesalahan saat mengembalikan produk');
+            });
 
         // Update UI
         loadProducts();
@@ -647,33 +815,51 @@ function restoreProduct(productId) {
 // Permanent delete
 function permanentDelete(productId) {
     if (confirm('Apakah Anda yakin ingin menghapus produk ini secara permanen? Tindakan ini tidak dapat dibatalkan.')) {
-        const productIndex = window.trashedProducts.findIndex(p => p.id === productId);
-        if (productIndex !== -1) {
-            window.trashedProducts.splice(productIndex, 1);
-            loadTrashProducts();
-            updateTrashCount();
-            alert('Produk telah dihapus secara permanen');
-        }
+        fetch(`/api/products/${productId}/permanent`, {
+            method: 'DELETE'
+        })
+            .then(response => {
+                if (!response.ok) throw new Error('Gagal menghapus permanen');
+                return response.json();
+            })
+            .then(() => {
+                window.trashedProducts = window.trashedProducts.filter(p => p.id !== productId);
+                loadTrashProducts();
+                updateTrashCount();
+                alert('Produk telah dihapus secara permanen');
+            })
+            .catch(error => {
+                console.error(error);
+                alert('Terjadi kesalahan saat menghapus produk');
+            });
     }
 }
-
-// Load trash products
-function loadTrashProducts() {
+// Load trash products dari backend
+async function loadTrashProducts() {
     const trashGrid = document.getElementById('trashProductGrid');
     trashGrid.innerHTML = '';
 
-    if (window.trashedProducts.length === 0) {
-        trashGrid.innerHTML = '<div class="empty-trash">Tempat sampah kosong</div>';
-        return;
-    }
+    try {
+        const response = await fetch('/api/products/trash'); // misal endpoint backend untuk data trash
+        if (!response.ok) throw new Error('Gagal mengambil data tempat sampah');
+        const trashedProducts = await response.json();
 
-    window.trashedProducts.forEach(product => {
-        const card = createTrashProductCard(product);
-        trashGrid.appendChild(card);
-    });
+        if (trashedProducts.length === 0) {
+            trashGrid.innerHTML = '<div class="empty-trash">Tempat sampah kosong</div>';
+            return;
+        }
+
+        trashedProducts.forEach(product => {
+            const card = createTrashProductCard(product);
+            trashGrid.appendChild(card);
+        });
+    } catch (error) {
+        console.error(error);
+        trashGrid.innerHTML = '<div class="error">Gagal memuat data tempat sampah</div>';
+    }
 }
 
-// Add function to mark unsaved changes
+// Tandai ada perubahan belum disimpan
 function markUnsavedChanges() {
     hasUnsavedChanges = true;
     const saveBtn = document.getElementById('saveChangesBtn');
@@ -682,33 +868,36 @@ function markUnsavedChanges() {
     }
 }
 
-// Modify save changes functionality
+// Simpan perubahan ke backend
 async function saveChanges() {
     const saveBtn = document.getElementById('saveChangesBtn');
 
     if (saveBtn.classList.contains('saving')) {
-        return;
+        return; // prevent multiple save clicks
     }
 
     try {
         saveBtn.classList.add('saving');
         saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
 
-        // Save to localStorage
-        localStorage.setItem('productsData', JSON.stringify(window.productsData));
+        // Kirim data produk yang sudah diedit ke backend
+        // Misal endpoint /api/products/update-many untuk batch update
+        const response = await fetch('/api/products/update-many', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(window.productsData) // kirim data produk terbaru
+        });
 
-        // Update original data
-        originalData.categories = JSON.parse(JSON.stringify(window.productsData.categories));
+        if (!response.ok) throw new Error('Gagal menyimpan perubahan');
 
-        // Reset unsaved changes state
+        // Jika berhasil, anggap data sudah sinkron dengan backend
+        // Bisa juga ambil ulang data asli dari backend jika perlu
+
         hasUnsavedChanges = false;
         const indicator = saveBtn.querySelector('.unsaved-indicator');
-        if (indicator) {
-            indicator.remove();
-        }
+        if (indicator) indicator.remove();
 
         alert('Perubahan berhasil disimpan!');
-
     } catch (error) {
         console.error('Error saving changes:', error);
         alert('Gagal menyimpan perubahan. Silakan coba lagi.');
@@ -718,7 +907,7 @@ async function saveChanges() {
     }
 }
 
-// Add warning when leaving with unsaved changes
+// Peringatan ketika meninggalkan halaman ada perubahan belum disimpan
 window.addEventListener('beforeunload', (e) => {
     if (hasUnsavedChanges) {
         e.preventDefault();
