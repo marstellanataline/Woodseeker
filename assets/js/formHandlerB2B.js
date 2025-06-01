@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', function () {
     console.error('Template ID is missing in the form.');
     return;
   }
-
   form.addEventListener('submit', async function (event) {
     event.preventDefault();
 
@@ -14,7 +13,6 @@ document.addEventListener('DOMContentLoaded', function () {
       alert('Please fill in all required fields.');
       return;
     }
-
     const formData = {
       company: form.company.value.trim(),
       name: form.name.value.trim(),
@@ -24,7 +22,6 @@ document.addEventListener('DOMContentLoaded', function () {
       businessType: form['business-type'].value,
       message: form.message.value.trim(),
     };
-
     try {
       await emailjs.send('service_a862l6m', templateId, formData);
       document.getElementById('formMessage').style.display = 'block';
