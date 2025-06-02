@@ -182,8 +182,8 @@
                         <div class="form-group">
                             <label>Dimensi (cm)</label>
                             <div style="display: flex; gap: 8px;">
-                                <input type="number" id="productDepth" name="productDepth" placeholder="Panjang"
-                                    min="0" required style="width: 81px;">
+                                <input type="number" id="productDepth" name="productDepth" placeholder="Panjang" min="0"
+                                    required style="width: 81px;">
                                 <input type="number" id="productWidth" name="productWidth" placeholder="Lebar" min="0"
                                     required style="width: 81px;">
                                 <input type="number" id="productHeight" name="productHeight" placeholder="Tinggi"
@@ -241,7 +241,7 @@
     <div class="modal-backdrop" id="editProductModal">
         <div class="modal">
             <div class="modal-header">
-                <h2 class="modal-title">Tambah Produk Baru</h2>
+                <h2 class="modal-title">Edit Produk</h2>
                 <button class="modal-close" onclick="closeAddProductModal()">&times;</button>
             </div>
             <div class="modal-body">
@@ -249,11 +249,12 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="productName">Nama Produk</label>
-                            <input type="text" id="productName" name="productName" placeholder="Meja Kerja" required>
+                            <input type="text" id="editProductName" name="editProductName" placeholder="Meja Kerja"
+                                required>
                         </div>
                         <div class="form-group">
                             <label for="productCategory">Kategori</label>
-                            <select id="productCategory" name="productCategory" required>
+                            <select id="editProductCategory" name="productCategory" required>
                                 <option value="">Pilih Kategori</option>
                                 <option value="1">Meja</option>
                                 <option value="2">Kursi</option>
@@ -265,12 +266,12 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="productPrice">Harga (Rp)</label>
-                            <input type="number" id="productPrice" name="productPrice" placeholder="150000" min="0"
+                            <input type="number" id="editProductPrice" name="productPrice" placeholder="150000" min="0"
                                 required>
                         </div>
                         <div class="form-group">
                             <label for="productMaterial">Material</label>
-                            <input type="text" id="productMaterial" name="productMaterial" placeholder="Kayu Jati"
+                            <input type="text" id="editProductMaterial" name="productMaterial" placeholder="Kayu Jati"
                                 required>
                         </div>
                     </div>
@@ -278,12 +279,12 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="productStock">Stok</label>
-                            <input type="number" id="productStock" name="productStock" placeholder="10" min="0"
+                            <input type="number" id="editProductStock" name="productStock" placeholder="10" min="0"
                                 required>
                         </div>
                         <div class="form-group">
                             <label for="productWeight">Berat (Kg)</label>
-                            <input type="number" id="productWeight" name="productWeight" placeholder="5" min="0"
+                            <input type="number" id="editProductWeight" name="productWeight" placeholder="5" min="0"
                                 required>
                         </div>
                     </div>
@@ -292,18 +293,18 @@
                         <div class="form-group">
                             <label>Dimensi (cm)</label>
                             <div style="display: flex; gap: 8px;">
-                                <input type="number" id="productDepth" name="productDepth" placeholder="Panjang"
+                                <input type="number" id="editProductDepth" name="productDepth" placeholder="Panjang"
                                     min="0" required style="width: 81px;">
-                                <input type="number" id="productWidth" name="productWidth" placeholder="Lebar" min="0"
-                                    required style="width: 81px;">
-                                <input type="number" id="productHeight" name="productHeight" placeholder="Tinggi"
+                                <input type="number" id="editProductWidth" name="productWidth" placeholder="Lebar"
+                                    min="0" required style="width: 81px;">
+                                <input type="number" id="editProductHeight" name="productHeight" placeholder="Tinggi"
                                     min="0" required style="width: 81px;">
                             </div>
                         </div>
                         <div class="form-group">
                             <label for="productColors">Warna yang Tersedia</label>
                             <div class="color-input-container">
-                                <select id="colorDropdown" class="form-control">
+                                <select id="editColorDropdown" class="form-control">
                                     <!-- Ini nanti diisi pakai JS atau server-side (PHP, Node, dll) -->
                                     <option value="1" data-hex="#000000">Black</option>
                                     <option value="2" data-hex="#808080">Gray</option>
@@ -322,7 +323,7 @@
                         <div class="form-group full-width">
                             <label for="productImage">Gambar Produk</label>
                             <div class="file-input-wrapper">
-                                <input type="text" id="productImage" name="productImage" placeholder="Kursi.jpg"
+                                <input type="text" id="editProductImage" name="productImage" placeholder="Kursi.jpeg"
                                     required>
                                 <!-- <input type="file" id="productImage" name="productImage" accept="image/*" required
                                     onchange="previewImage(event)"> -->
@@ -334,7 +335,7 @@
                     <div class="form-row">
                         <div class="form-group full-width">
                             <label for="productDescription">Deskripsi</label>
-                            <textarea id="productDescription" name="productDescription" rows="4" required
+                            <textarea id="editProductDescription" name="productDescription" rows="4" required
                                 placeholder="Masukkan deskripsi produk..."></textarea>
                         </div>
                     </div>

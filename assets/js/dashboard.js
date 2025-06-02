@@ -278,48 +278,76 @@ async function handleAddProduct() {
 }
 
 async function handleEditProduct(event) {
-  event.preventDefault(); // Biar gak reload halaman
+    event.preventDefault();
+    
+    const productId = document.getElementById('editProductForm').getAttribute('data-product-id');
+    
+    const name = document.getElementById('editProductName').value.trim();
+    const price = parseInt(document.getElementById('editProductPrice').value);
+    const stock = parseInt(document.getElementById('editProductStock').value);
+    const description = document.getElementById('editProductDescription').value.trim();
+    const category = document.getElementById('editProductCategory').value.trim();
+    const material = document.getElementById('editProductMaterial').value.trim();
+    const weight = parseFloat(document.getElementById('editProductWeight').value);
+    const width = parseFloat(document.getElementById('editProductWidth').value);
+    const depth = parseFloat(document.getElementById('editProductDepth').value);
+    const height = parseFloat(document.getElementById('editProductHeight').value);
+    const image = document.getElementById('editProductImage').value.trim();
+    const selectedColors = [...editColors];
 
-  const form = document.getElementById("editProductForm");
-  const productId = form.getAttribute("data-product-id"); // Pastikan diset waktu buka modal edit
-
-  const productData = {
-    name: form.productName.value,
-    category_id: parseInt(form.productCategory.value),
-    price: parseFloat(form.productPrice.value),
-    material: form.productMaterial.value,
-    stock: parseInt(form.productStock.value),
-    weight: parseFloat(form.productWeight.value),
-    width: parseFloat(form.productWidth.value),
-    depth: parseFloat(form.productLength.value), // panjang jadi depth
-    height: parseFloat(form.productHeight.value),
-    colors: selectedEditColors, // variabel ini perlu disiapkan sama kayak di addProduct
-    image: form.productImage.value,
-    description: form.productDescription.value,
-    status: "draft"
-  };
-
-  try {
-    const response = await fetch(`http://localhost:5000/api/products/${productId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(productData)
-    });
-
-    if (!response.ok) {
-      throw new Error("Gagal mengedit produk.");
+    // Validasi input
+    if (!name || isNaN(price) || isNaN(stock) || !category || !image) {
+        alert('Mohon lengkapi semua data yang dibutuhkan.');
+        return;
     }
 
-    alert("Produk berhasil diedit!");
-    closeEditProductModal();
-    await loadProducts(); // refresh daftar produk
+    // Ambil status produk yang sudah ada (jangan ubah status saat edit)
+    let currentStatus = 'unlisted'; // default
+    try {
+        const currentProductRes = await fetch(`http://localhost:5000/api/products/${productId}`);
+        const currentProduct = await currentProductRes.json();
+        currentStatus = currentProduct.status;
+    } catch (err) {
+        console.warn('Could not fetch current product status, using default');
+    }
 
-  } catch (error) {
-    console.error("Error editing product:", error);
-    alert("Terjadi kesalahan saat mengedit produk.");
-  }
+    const payload = {
+        name,
+        price,
+        stock,
+        description,
+        material,
+        weight,
+        width,
+        depth,
+        height,
+        image,
+        category_id: category,
+        status: currentStatus, // Pertahankan status yang sudah ada
+        colors: selectedColors
+    };
+
+    try {
+        const response = await fetch(`http://localhost:5000/api/products/update/${productId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const result = await response.json();
+            throw new Error(result.error || 'Gagal mengedit produk.');
+        }
+
+        document.getElementById('editProductModal').classList.remove('show');
+        loadProducts(); // Refresh data
+        alert('Produk berhasil diperbarui!');
+    } catch (error) {
+        console.error('Error updating product:', error);
+        alert('Terjadi kesalahan: ' + error.message);
+    }
 }
 
 // // Product actions
@@ -684,30 +712,47 @@ document.getElementById('addProductModal').addEventListener('click', function (e
 // Edit product functions
 let editColors = [];
 
-function editProduct(productId) {
-    const product = findProduct(productId);
-    if (!product) return;
+async function editProduct(productId) {
+    try {
+        // Ambil data produk dari backend
+        const response = await fetch(`http://localhost:5000/api/products/${productId}`);
+        if (!response.ok) throw new Error('Gagal mengambil data produk');
+        
+        const product = await response.json();
+        
+        // Reset edit colors array dengan data dari backend
+        editColors = [...(product.colors || [])];
 
-    // Reset edit colors array
-    editColors = [...(product.product.colors || [])];
+        // Set data-product-id ke form
+        const form = document.getElementById("editProductForm");
+        form.setAttribute("data-product-id", productId);
 
-    // Fill form with product data
-    document.getElementById('editProductId').value = productId;
-    document.getElementById('editProductName').value = product.product.name;
-    document.getElementById('editProductCategory').value = product.category;
-    document.getElementById('editProductPrice').value = product.product.price;
-    document.getElementById('editProductDescription').value = product.product.description || '';
+        // Isi form dengan data produk dari backend
+        document.getElementById('editProductName').value = product.name || '';
+        document.getElementById('editProductCategory').value = product.category_id || '';
+        document.getElementById('editProductPrice').value = product.price || '';
+        document.getElementById('editProductStock').value = product.stock || '';
+        document.getElementById('editProductMaterial').value = product.material || '';
+        document.getElementById('editProductWeight').value = product.weight || '';
+        document.getElementById('editProductWidth').value = product.width || '';
+        document.getElementById('editProductDepth').value = product.depth || '';
+        document.getElementById('editProductHeight').value = product.height || '';
+        document.getElementById('editProductImage').value = product.image || '';
+        document.getElementById('editProductDescription').value = product.description || '';
 
-    // Update color list
-    updateEditColorList();
+        // Update daftar warna
+        updateEditColorList();
 
-    // Show current image
-    const editImagePreview = document.getElementById('editImagePreview');
-    editImagePreview.style.backgroundImage = `url(${product.product.image})`;
-    editImagePreview.classList.remove('empty');
-
-    // Show modal
-    document.getElementById('editProductModal').classList.add('show');
+        // Tampilkan modal edit
+        document.getElementById('editProductModal').classList.add('show');
+        
+        // Pasang event handler untuk form submit
+        form.onsubmit = handleEditProduct;
+        
+    } catch (error) {
+        console.error('Error loading product for edit:', error);
+        alert('Gagal memuat data produk untuk diedit: ' + error.message);
+    }
 }
 
 function closeEditProductModal() {
