@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Catalog - WOODSEEKER</title>
   <link rel="stylesheet" href="../assets/css/style.css" />
   <link rel="stylesheet" href="../assets/css/admin.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 </head>
+
 <body>
   <div id="header-container"></div>
 
@@ -33,7 +35,7 @@
     <section class="catalog" id="catalog">
       <div class="container">
         <div class="category-grid">
-          <!-- Products will be loaded dynamically from products.json -->
+          <!-- Products will be loaded dynamically from server -->
         </div>
       </div>
     </section>
@@ -69,9 +71,30 @@
 
     async function loadProducts() {
       try {
-        const response = await fetch('http://localhost:3000/api/products');
+        const response = await fetch('http://localhost:5000/api/products');
         const data = await response.json();
-        allProducts = data.categories;
+        console.log('DATA DARI SERVER:', data);
+
+        // Filter hanya yang listed
+        const listedOnly = data.filter(p => p.status === 'listed');
+
+        // Kelompokkan berdasarkan kategori
+        const grouped = {};
+        listedOnly.forEach(product => {
+          const category = product.category_name || 'Uncategorized';
+          if (!grouped[category]) {
+            grouped[category] = [];
+          }
+          grouped[category].push(product);
+        });
+
+        // Ubah jadi array of { id, name, products }
+        allProducts = Object.entries(grouped).map(([name, products], index) => ({
+          id: name, // pakai nama kategori sebagai id
+          name,
+          products
+        }));
+
         filterAndRender();
       } catch (error) {
         console.error('Error loading products:', error);
@@ -119,9 +142,11 @@
                 <h4>Specifications</h4>
                 <ul>
                   <li><strong>Material:</strong> ${product.material || 'Solid Wood'}</li>
-                  <li><strong>Dimensions:</strong> ${product.dimensions 
-                    ? `${product.dimensions.width}cm x ${product.dimensions.depth}cm x ${product.dimensions.height}cm`
-                    : 'N/A'}</li>
+                  <li><strong>Dimensions:</strong> 
+                    ${product.width && product.depth && product.height
+                    ? `${product.width}cm x ${product.depth}cm x ${product.height}cm`
+                    : 'N/A'}
+                  </li>
                   <li><strong>Weight:</strong> ${product.weight || 'N/A'}</li>
                 </ul>
               </div>
@@ -134,7 +159,7 @@
               </div>
             </div>
           </details>
-          <a href="product-detail.html?id=${product.id}" class="view-details">View Full Details</a>
+          <a href="product-detail.html?id=${product.product_id}" class="view-details">View Full Details</a>
         </div>
       `;
 
@@ -151,4 +176,5 @@
     }
   </script>
 </body>
+
 </html>

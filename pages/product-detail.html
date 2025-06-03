@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Product Detail - WoodSeeker</title>
-        <link rel="stylesheet" href="../assets/css/style.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"> <!-- diperbaiki -->
-    </head>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Detail - WoodSeeker</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet"> <!-- diperbaiki -->
+</head>
+
 <body>
     <div id="header-container"></div>
 
@@ -18,7 +21,7 @@
                     <i class="fas fa-arrow-left"></i>
                     <span>Back</span>
                 </a>
-                
+
                 <div class="product-grid">
                     <div class="product-images">
                         <div class="main-image">
@@ -32,7 +35,7 @@
                         <span class="stock-status" id="stockStatus"></span>
                         <h1 id="productName"></h1>
                         <p class="price" id="productPrice"></p>
-                        
+
                         <div class="product-meta">
                             <div class="meta-item">
                                 <span class="label">Category:</span>
@@ -79,88 +82,91 @@
 
     <script src="../assets/js/script.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             loadComponent('../components/header.html', 'header-container');
             loadComponent('../components/footer.html', 'footer-container');
-            
-            // Get product ID from URL
+
             const urlParams = new URLSearchParams(window.location.search);
             const productId = urlParams.get('id');
-            
+
             if (productId) {
                 loadProductDetails(productId);
             } else {
-                // Redirect to catalog if no product ID
                 window.location.href = 'catalog.html';
             }
+
+            // ✅ Event listener untuk Order Now button
+            document.addEventListener('click', function (e) {
+                if (e.target.id === 'orderButton' || e.target.closest('#orderButton')) {
+                    e.preventDefault();
+
+                    // Ambil data produk dari DOM yang sudah di-load
+                    const productName = document.getElementById('productName').textContent;
+                    const category = document.getElementById('productCategory').textContent;
+
+                    handleOrderClick(productName, category);
+                }
+            });
         });
 
         async function loadProductDetails(productId) {
             try {
-                const response = await fetch('../data/products.json');
-                const data = await response.json();
-                
-                // Find the product in categories
-                let foundProduct = null;
-                let categoryName = '';
-                
-                for (const category of data.categories) {
-                    const product = category.products.find(p => p.id === productId);
-                    if (product) {
-                        foundProduct = product;
-                        categoryName = category.name;
-                        break;
-                    }
+                const response = await fetch(`http://localhost:5000/api/products/${productId}`);
+                if (!response.ok) throw new Error('Produk tidak ditemukan');
+
+                const product = await response.json();
+
+                // Update judul halaman
+                document.title = `${product.name} - WOODSEEKER`;
+
+                // Update info produk
+                document.getElementById('productName').textContent = product.name;
+                document.getElementById('productPrice').textContent = `Rp ${Number(product.price).toLocaleString('id-ID')}`;
+                document.getElementById('productCategory').textContent = product.category_name || 'Lainnya';
+                document.getElementById('productMaterial').textContent = product.material || 'Solid Wood';
+                document.getElementById('productWeight').textContent = product.weight || 'N/A';
+
+                // Dimensi
+                if (product.width && product.depth && product.height) {
+                    document.getElementById('productDimensions').textContent = `${product.width}cm x ${product.depth}cm x ${product.height}cm`;
+                } else {
+                    document.getElementById('productDimensions').textContent = 'N/A';
                 }
 
-                if (foundProduct) {
-                    // Update page title
-                    document.title = `${foundProduct.name} - WOODSEEKER`;
-                    
-                    // Update product information
-                    document.getElementById('productName').textContent = foundProduct.name;
-                    document.getElementById('productPrice').textContent = `Rp ${foundProduct.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
-                    document.getElementById('productCategory').textContent = categoryName;
-                    document.getElementById('productMaterial').textContent = foundProduct.material || 'Solid Wood';
-                    document.getElementById('productWeight').textContent = foundProduct.weight || 'N/A';
-                    
-                    // Update dimensions
-                    const dimensions = foundProduct.dimensions;
-                    document.getElementById('productDimensions').textContent = dimensions ? 
-                        `${dimensions.width}cm x ${dimensions.depth}cm x ${dimensions.height}cm` : 'N/A';
-                    
-                    // Update main image
-                    const mainImage = document.getElementById('mainImage');
-                    mainImage.src = `../assets/images/${foundProduct.image}`;
-                    mainImage.alt = foundProduct.name;
-                    
-                    // Update color options
-                    const colorOptions = document.getElementById('colorOptions');
-                    colorOptions.innerHTML = foundProduct.colors.map(color => `
-                        <label class="color-option">
-                            <input type="radio" name="color" value="${color}" ${color === foundProduct.colors[0] ? 'checked' : ''}>
-                            <span class="color-dot ${color}"></span>
-                            <span>${color.charAt(0).toUpperCase() + color.slice(1)}</span>
-                        </label>
-                    `).join('');
-                    
-                    // Update stock status
-                    const stockStatus = document.getElementById('stockStatus');
-                    const inStock = foundProduct.stock > 0;
-                    stockStatus.className = `stock-status ${inStock ? 'in-stock' : 'out-of-stock'}`;
-                    stockStatus.textContent = inStock ? 'In Stock' : 'Out of Stock';
-                    
-                    // Update order button
-                    const orderButton = document.getElementById('orderButton');
-                    orderButton.onclick = () => handleOrderClick(foundProduct.name, categoryName);
+                // Gambar
+                const mainImage = document.getElementById('mainImage');
+                mainImage.src = `../assets/images/${product.image}`;
+                mainImage.alt = product.name;
+
+                // Warna
+                const colorOptions = document.getElementById('colorOptions');
+                if (product.colors && product.colors.length > 0) {
+                    colorOptions.innerHTML = product.colors.map(color => `
+                <label class="color-option">
+                    <input type="radio" name="color" value="${color}" ${color === product.colors[0] ? 'checked' : ''}>
+                    <span class="color-dot ${color}"></span>
+                    <span>${color.charAt(0).toUpperCase() + color.slice(1)}</span>
+                </label>
+            `).join('');
                 } else {
-                    // Product not found, redirect to catalog
-                    window.location.href = 'catalog.html';
+                    colorOptions.innerHTML = '<p class="no-color">No color options available.</p>';
                 }
+
+                // Stok
+                const stockStatus = document.getElementById('stockStatus');
+                const inStock = product.stock > 0;
+                stockStatus.className = `stock-status ${inStock ? 'in-stock' : 'out-of-stock'}`;
+                stockStatus.textContent = inStock ? 'In Stock' : 'Out of Stock';
+
+                // Tombol order
+                const orderButton = document.getElementById('orderButton');
+                orderButton.onclick = () => handleOrderClick(product.name, product.category_name);
             } catch (error) {
-                console.error('Error loading product details:', error);
-                // Redirect to catalog on error
-                window.location.href = 'catalog.html';
+                console.error('Gagal memuat detail produk:', error);
+                // Tunda redirect 3 detik supaya kamu sempat lihat error di console
+                setTimeout(() => {
+                    window.location.href = 'catalog.html';
+                }, 7000);
             }
         }
 
@@ -173,4 +179,5 @@
         }
     </script>
 </body>
-</html> 
+
+</html>

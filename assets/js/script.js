@@ -103,7 +103,7 @@ showSlide(0);
 // Color selection functionality for product cards
 document.querySelectorAll('.color-dot').forEach(dot => {
     dot.addEventListener('click', function() {
-        const card = this.closest('.category-card');
+        const card = this.closest('.card');
         card.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
         this.classList.add('selected');
     });

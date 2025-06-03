@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,10 +11,43 @@
     <!-- EmailJS SDK -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script type="text/javascript">
-        (function() {
+        (function () {
             // https://dashboard.emailjs.com/admin/account
             emailjs.init("grK8Kfz77RI-X72cV");
         })();
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Auto-fill form dari sessionStorage
+            const productDetails = JSON.parse(sessionStorage.getItem('productDetails') || '{}');
+
+            if (productDetails.name) {
+                // Isi field Nama Produk
+                document.getElementById('namaProduk').value = productDetails.name;
+
+                // Isi dropdown Kategori (convert ke lowercase untuk matching)
+                const kategoriSelect = document.getElementById('kategori');
+                const categoryLower = productDetails.category.toLowerCase();
+
+                // Cari option yang sesuai
+                for (let option of kategoriSelect.options) {
+                    if (option.value === categoryLower || option.text.toLowerCase().includes(categoryLower)) {
+                        option.selected = true;
+                        break;
+                    }
+                }
+
+                // Isi field Rincian Produk dengan info warna jika ada
+                const rincianField = document.getElementById('rincian');
+                let rincianText = `Warna yang dipilih: ${productDetails.color || 'Belum dipilih'}\n\n`;
+                rincianText += 'Detail tambahan:\n- ';
+                rincianField.value = rincianText;
+
+                // Set cursor di akhir text untuk user bisa langsung ngetik
+                rincianField.focus();
+                rincianField.setSelectionRange(rincianField.value.length, rincianField.value.length);
+            }
+        });
     </script>
     <!-- Google Maps API -->
     <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
@@ -43,8 +77,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         /* Success and error messages */
@@ -92,6 +131,7 @@
         }
     </style>
 </head>
+
 <body>
     <div id="header-container"></div>
 
@@ -111,8 +151,7 @@
                         <form id="contactForm">
                             <div class="form-group">
                                 <label for="nama">Nama Lengkap <span class="required">*</span></label>
-                                <input type="text" id="nama" name="nama" required
-                                    placeholder="e.g., Raihan Singh">
+                                <input type="text" id="nama" name="nama" required placeholder="e.g., Raihan Singh">
                                 <small class="form-hint">Masukkan nama lengkap Anda sesuai identitas</small>
                             </div>
                             <div class="form-group">
@@ -183,8 +222,9 @@
                     </div>
                     <div class="contact-info">
                         <h3>Get In Touch</h3>
-                        <p>Need solutions for household decors? Feel the direct touch, connect with trusted solution, and scale your business efficiently.</p>
-                        
+                        <p>Need solutions for household decors? Feel the direct touch, connect with trusted solution,
+                            and scale your business efficiently.</p>
+
                         <div class="contact-details">
                             <div class="contact-item">
                                 <i class="fas fa-map-marker-alt"></i>
@@ -219,25 +259,24 @@
                         <div class="social-links">
                             <h4>Follow Us</h4>
                             <div class="social-icons">
-                                <a href="https://www.instagram.com/woodseekerr?igsh=MXJ5Ym9uaXJ3cHg1Mg==" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
-                                <a href="https://www.tokopedia.com/woodseeker?fbclid=PAQ0xDSwKFbAxleHRuA2FlbQIxMQABp7FkLfBrtjlxhmdGNeXx14fC7eo-uusixltfA9Qx2dFWNLfOp1tVtz6fETdL_aem_jJh6KXA5OQGUx15usGqc4w" title="Tokopedia" target="_blank"><i class="fa-solid fa-store"></i></a>
-                                <a href="https://www.tiktok.com/@woodseekerr?_t=ZS-8w6CUeFMh6d&_r=1" title="TikTok" target="_blank"><i class="fa-brands fa-tiktok"></i></a>
+                                <a href="https://www.instagram.com/woodseekerr?igsh=MXJ5Ym9uaXJ3cHg1Mg=="
+                                    title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                                <a href="https://www.tokopedia.com/woodseeker?fbclid=PAQ0xDSwKFbAxleHRuA2FlbQIxMQABp7FkLfBrtjlxhmdGNeXx14fC7eo-uusixltfA9Qx2dFWNLfOp1tVtz6fETdL_aem_jJh6KXA5OQGUx15usGqc4w"
+                                    title="Tokopedia" target="_blank"><i class="fa-solid fa-store"></i></a>
+                                <a href="https://www.tiktok.com/@woodseekerr?_t=ZS-8w6CUeFMh6d&_r=1" title="TikTok"
+                                    target="_blank"><i class="fa-brands fa-tiktok"></i></a>
                             </div>
                         </div>
 
-                        <iframe 
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15854.178242192022!2d106.8557194!3d-6.6453089!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69c88c970a4fdb%3A0xb22604f6f5e0142d!2sJl.+Raya+Sukaraja+No.16,+Cipayung+Datar,+Kec.+Megamendung,+Kabupaten+Bogor,+Jawa+Barat+16770!5e0!3m2!1sid!2sid!4v1753415288701"
-                        width="600" 
-                        height="450" 
-                        style="border:0;" 
-                        allowfullscreen 
-                        loading="lazy" 
-                        referrerpolicy="no-referrer-when-downgrade">
+                        <iframe
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15854.178242192022!2d106.8557194!3d-6.6453089!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69c88c970a4fdb%3A0xb22604f6f5e0142d!2sJl.+Raya+Sukaraja+No.16,+Cipayung+Datar,+Kec.+Megamendung,+Kabupaten+Bogor,+Jawa+Barat+16770!5e0!3m2!1sid!2sid!4v1753415288701"
+                            width="600" height="450" style="border:0;" allowfullscreen loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade">
                         </iframe>
 
-                        </div>
                     </div>
                 </div>
+            </div>
             </div>
         </section>
     </main>
@@ -247,4 +286,5 @@
     <script src="../assets/js/script.js"></script>
     <script src="../assets/js/formHandlerContact.js"></script>
 </body>
+
 </html>

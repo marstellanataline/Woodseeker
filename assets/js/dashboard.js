@@ -66,16 +66,17 @@ function handleLogout() {
 // Load products from backend API, group by category, and display them
 async function loadProducts() {
     try {
+        const response = await fetch('http://localhost:5000/api/products');
+        const products = await response.json();
+        if (!response.ok) throw new Error('Gagal mengambil data produk dari server.');
+
         const listedGrid = document.getElementById('listedProductGrid');
         const unlistedGrid = document.getElementById('unlistedProductGrid');
 
         listedGrid.innerHTML = '';
         unlistedGrid.innerHTML = '';
 
-        const response = await fetch('http://localhost:5000/api/products');
-        if (!response.ok) throw new Error('Gagal mengambil data produk dari server.');
 
-        const products = await response.json();
         console.log(products)
         // Group products by category_name
         const grouped = {};
@@ -279,9 +280,9 @@ async function handleAddProduct() {
 
 async function handleEditProduct(event) {
     event.preventDefault();
-    
+
     const productId = document.getElementById('editProductForm').getAttribute('data-product-id');
-    
+
     const name = document.getElementById('editProductName').value.trim();
     const price = parseInt(document.getElementById('editProductPrice').value);
     const stock = parseInt(document.getElementById('editProductStock').value);
@@ -311,6 +312,14 @@ async function handleEditProduct(event) {
         console.warn('Could not fetch current product status, using default');
     }
 
+    const colorIds = editColors.map(colorName => {
+        const dropdown = document.getElementById('editColorDropdown');
+        const option = Array.from(dropdown.options).find(opt =>
+            opt.text.toLowerCase() === colorName.toLowerCase()
+        );
+        return option ? parseInt(option.value) : null;
+    }).filter(id => id !== null);
+
     const payload = {
         name,
         price,
@@ -324,7 +333,7 @@ async function handleEditProduct(event) {
         image,
         category_id: category,
         status: currentStatus, // Pertahankan status yang sudah ada
-        colors: selectedColors
+        colors: colorIds
     };
 
     try {
@@ -520,24 +529,23 @@ function previewImage(event) {
 // Color management
 let selectedColors = [];
 
-function addSelectedColor() {
-    const dropdown = document.getElementById('colorDropdown');
+function addSelectedColorEdit() {
+    const dropdown = document.getElementById('editColorDropdown');
     const selectedOption = dropdown.options[dropdown.selectedIndex];
-    const colorId = selectedOption.value;
-    const colorName = selectedOption.text;
-    const colorHex = selectedOption.getAttribute('data-hex');
 
     const colorData = {
-        id: colorId,
-        name: colorName,
-        hex: colorHex
+        color_id: parseInt(selectedOption.value),
+        name: selectedOption.text,
+        hex: selectedOption.getAttribute('data-hex')
     };
 
-    // Cek apakah sudah dipilih
-    if (!selectedColors.some(c => c.id === colorId)) {
-        selectedColors.push(colorData);
-        updateColorList();
+    // Cek duplikat
+    if (!editColors.find(c => c.color_id === colorData.color_id)) {
+        editColors.push(colorData);  // ← Push object, bukan string
     }
+
+    // Update UI juga kalau perlu
+    updateEditColorDisplay();
 }
 
 function removeColor(index) {
@@ -717,9 +725,9 @@ async function editProduct(productId) {
         // Ambil data produk dari backend
         const response = await fetch(`http://localhost:5000/api/products/${productId}`);
         if (!response.ok) throw new Error('Gagal mengambil data produk');
-        
+
         const product = await response.json();
-        
+
         // Reset edit colors array dengan data dari backend
         editColors = [...(product.colors || [])];
 
@@ -745,10 +753,10 @@ async function editProduct(productId) {
 
         // Tampilkan modal edit
         document.getElementById('editProductModal').classList.add('show');
-        
+
         // Pasang event handler untuk form submit
         form.onsubmit = handleEditProduct;
-        
+
     } catch (error) {
         console.error('Error loading product for edit:', error);
         alert('Gagal memuat data produk untuk diedit: ' + error.message);
@@ -758,27 +766,23 @@ async function editProduct(productId) {
 function closeEditProductModal() {
     document.getElementById('editProductModal').classList.remove('show');
     document.getElementById('editProductForm').reset();
-    document.getElementById('editImagePreview').style.backgroundImage = '';
-    document.getElementById('editImagePreview').classList.add('empty');
-    editColors = [];
+    // document.getElementById('editImagePreview').style.backgroundImage = '';
+    // document.getElementById('editImagePreview').classList.add('empty');
+
+    editColors = []; // RESET
     updateEditColorList();
 }
 
 function addSelectedColorEdit() {
     const dropdown = document.getElementById('editColorDropdown');
     const selectedOption = dropdown.options[dropdown.selectedIndex];
-    const colorName = selectedOption.text;
+    const colorName = selectedOption.text.toLowerCase(); // lowercase untuk cocokkan dengan backend
     const colorValue = selectedOption.getAttribute('data-hex');
 
-    if (colorValue) {
-        const colorData = {
-            name: colorName,
-            value: colorValue
-        };
-
-        // Cek apakah warna sudah ada
-        if (!editColors.some(c => c.value === colorValue)) {
-            editColors.push(colorData);
+    if (colorName && colorValue) {
+        // Cek apakah warna sudah ada (by name lowercase)
+        if (!editColors.includes(colorName)) {
+            editColors.push(colorName);
             updateEditColorList();
         }
     }
@@ -791,31 +795,40 @@ function removeEditColor(index) {
 
 function updateEditColorList() {
     const colorList = document.getElementById('editColorList');
-    colorList.innerHTML = editColors.map((color, index) => `
-        <div class="color-item">
-            <div class="color-preview" style="background-color: ${color.value}"></div>
-            <span>${color.name}</span>
-            <button type="button" onclick="removeEditColor(${index})">&times;</button>
-        </div>
-    `).join('');
+
+    // Konversi warna menjadi { name, value } untuk keperluan tampilan
+    colorList.innerHTML = editColors.map((colorName, index) => {
+        const option = [...document.getElementById('editColorDropdown').options]
+            .find(opt => opt.text.toLowerCase() === colorName);
+
+        const colorHex = option ? option.getAttribute('data-hex') : '#000'; // fallback hitam
+
+        return `
+            <div class="color-item">
+                <div class="color-preview" style="background-color: ${colorHex}"></div>
+                <span>${colorName}</span>
+                <button type="button" onclick="removeEditColor(${index})">&times;</button>
+            </div>
+        `;
+    }).join('');
 }
 
-function previewEditImage(event) {
-    const file = event.target.files[0];
-    const preview = document.getElementById('editImagePreview');
+// function previewEditImage(event) {
+//     const file = event.target.files[0];
+//     const preview = document.getElementById('editImagePreview');
 
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            preview.style.backgroundImage = `url(${e.target.result})`;
-            preview.classList.remove('empty');
-        }
-        reader.readAsDataURL(file);
-    } else {
-        preview.style.backgroundImage = '';
-        preview.classList.add('empty');
-    }
-}
+//     if (file) {
+//         const reader = new FileReader();
+//         reader.onload = function (e) {
+//             preview.style.backgroundImage = `url(${e.target.result})`;
+//             preview.classList.remove('empty');
+//         }
+//         reader.readAsDataURL(file);
+//     } else {
+//         preview.style.backgroundImage = '';
+//         preview.classList.add('empty');
+//     }
+// }
 
 function saveEditProduct() {
     const form = document.getElementById('editProductForm');

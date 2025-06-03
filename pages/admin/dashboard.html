@@ -242,7 +242,7 @@
         <div class="modal">
             <div class="modal-header">
                 <h2 class="modal-title">Edit Produk</h2>
-                <button class="modal-close" onclick="closeAddProductModal()">&times;</button>
+                <button class="modal-close" onclick="closeEditProductModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="editProductForm" onsubmit="handleEditProduct(event)">
@@ -310,12 +310,12 @@
                                     <option value="2" data-hex="#808080">Gray</option>
                                     <option value="3" data-hex="#A52A2A">Brown</option>
                                 </select>
-                                <button type="button" class="add-color-btn" onclick="addSelectedColor()"
+                                <button type="button" class="add-color-btn" onclick="addSelectedColorEdit()"
                                     title="Tambah Warna">
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </div>
-                            <div class="color-list" id="colorList"></div>
+                            <div class="color-list" id="editColorList"></div>
                         </div>
                     </div>
 
