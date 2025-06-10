@@ -44,7 +44,7 @@
     </div>
 
     <script>
-        const BASE_BACKEND_URL = 'http://woodseeker-backend.onrender.com';
+        const BASE_BACKEND_URL = 'https://woodseeker-backend.onrender.com';
         // Handle form submission
         document.getElementById('loginForm').addEventListener('submit', async function (event) {
             event.preventDefault();
@@ -55,45 +55,57 @@
             const errorElement = document.getElementById('loginError');
 
             try {
-                const res = await fetch('${BASE_BACKEND_URL}/api/auth/login', {
+                // 1. Lakukan fetch. Pastikan URL menggunakan backticks (`)
+                const response = await fetch(`${BASE_BACKEND_URL}/api/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.token) {
-                            localStorage.setItem('token', data.token);
-                            window.location.replace('dashboard.html');
-                        } else {
-                            alert(data.error || 'Login gagal');
-                        }
-                    });
+                });
 
-                const data = await res.json();
+                // 2. Cek apakah responsnya OK (status 200-299)
+                if (!response.ok) {
+                    // Jika tidak OK, baca body sebagai teks untuk debugging atau pesan error dari backend
+                    const errorText = await response.text();
+                    console.error('Login failed (non-OK status):', response.status, errorText);
+                    // Coba parse sebagai JSON jika mungkin, tapi fallback ke teks
+                    try {
+                        const errorData = JSON.parse(errorText);
+                        errorElement.textContent = errorData.error || `Login gagal: ${errorData.message}`;
+                    } catch {
+                        errorElement.textContent = `Login gagal: ${errorText}`;
+                    }
+                    errorElement.style.display = 'block';
+                    return; // Hentikan eksekusi di sini
+                }
 
-                if (res.ok) {
-                    // Simpan token dari backend
+                // 3. Jika respons OK, parse body sebagai JSON
+                const data = await response.json();
+
+                // 4. Proses data yang berhasil diterima
+                if (data.token) {
                     localStorage.setItem('token', data.token);
 
-                    // Simpan email kalau "ingat saya" dicentang
                     if (rememberMe) {
                         localStorage.setItem('rememberedEmail', email);
                     } else {
                         localStorage.removeItem('rememberedEmail');
                     }
 
-                    // Redirect ke dashboard
-                    window.location.href = 'dashboard.html';
+                    window.location.replace('dashboard.html'); // Gunakan replace agar tidak bisa back
                 } else {
-                    errorElement.textContent = data.error || 'Login gagal.';
+                    // Ini jika backend mengembalikan status 200 OK tapi dengan pesan error di body
+                    errorElement.textContent = data.error || 'Login gagal (respons server tidak valid).';
                     errorElement.style.display = 'block';
                 }
+
             } catch (err) {
-                console.error(err);
-                errorElement.textContent = 'Gagal koneksi ke server.';
+                // Ini menangani error jaringan atau error lain di luar respons HTTP
+                console.error('Catch block error:', err);
+                errorElement.textContent = 'Gagal koneksi ke server atau error tidak terduga.';
                 errorElement.style.display = 'block';
             }
+            // Pastikan event listener untuk form submit menutupi seluruh kode di atas
+            // Misalnya: loginForm.addEventListener('submit', async (e) => { ... });
         });
 
         // Check for remembered email

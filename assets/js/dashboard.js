@@ -17,7 +17,7 @@ async function checkAuth() {
     }
 
     try {
-        const res = await fetch('${BASE_BACKEND_URL}/api/auth/verify', {
+        const res = await fetch(`${BASE_BACKEND_URL}/api/auth/verify`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -67,7 +67,7 @@ function handleLogout() {
 // Load products from backend API, group by category, and display them
 async function loadProducts() {
     try {
-        const response = await fetch('${BASE_BACKEND_URL}/api/products');
+        const response = await fetch(`${BASE_BACKEND_URL}/api/products`);
         const products = await response.json();
         if (!response.ok) throw new Error('Gagal mengambil data produk dari server.');
 
@@ -220,7 +220,7 @@ async function handleAddProduct() {
         };
 
         try {
-            const response = await fetch('${BASE_BACKEND_URL}/api/products/add', {
+            const response = await fetch(`${BASE_BACKEND_URL}/api/products/add`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

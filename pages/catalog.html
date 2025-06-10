@@ -74,7 +74,7 @@
 
     async function loadProducts() {
       try {
-        const response = await fetch('${BASE_BACKEND_URL}/api/products');
+        const response = await fetch(`${BASE_BACKEND_URL}/api/products`);
         const data = await response.json();
         console.log('DATA DARI SERVER:', data);
 
