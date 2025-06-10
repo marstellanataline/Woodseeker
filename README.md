@@ -38,7 +38,6 @@ Woodseeker adalah website profil bisnis dan networking untuk bisnis bernama Wood
 
 ![AboutP](./assets/images/fitur/about_1.png)
 ![AboutP](./assets/images/fitur/about_2.png)
-![AboutP](./assets/images/fitur/about_3.png)
 
 ### Catalog Page
 
