@@ -16,26 +16,48 @@ Woodseeker adalah website profil bisnis dan networking untuk bisnis bernama Wood
 
 ### Entity Relationship Diagram
 
-![ERD](./assets/images/diagram/ERD_fix.jpg)
+![ERD](./assets/images/diagram/ERD_Fix.jpeg)
 
 ### Class Diagram
 
-![ClassD](./assets/images/diagram/ERD_fix.jpg)
-
-### Activity Diagram
-
-![ActivityD](./assets/images/diagram/ERD_fix.jpg)
+![ClassD](./assets/images/diagram/Class_Diagram_Fix.png)
 
 ### Use Case Diagram
 
-![UseCaseD](./assets/images/diagram/ERD_fix.jpg)
+![UseCaseD](./assets/images/diagram/Use_Case_Fix.jpeg)
 
 ## Fitur
 
-### Welcome Page
-
-![WelcomeP](./public/img/ss/Welcome.jpg)
-
 ### Home Page
 
-![HomeP](./public/img/ss/Home.jpg)
+![HomeP](./assets/images/fitur/homepage_1.png)
+![HomeP](./assets/images/fitur/homepage_2.png)
+![HomeP](./assets/images/fitur/homepage_3.png)
+
+### About Page
+
+![AboutP](./assets/images/fitur/about_1.png)
+![AboutP](./assets/images/fitur/about_2.png)
+![AboutP](./assets/images/fitur/about_3.png)
+
+### Catalog Page
+
+![CatalogP](./assets/images/fitur/catalog.png)
+
+### B2B Page
+
+![B2BP](./assets/images/fitur/b2b_1.png)
+![B2BP](./assets/images/fitur/b2b_2.png)
+
+### Contact Us Page
+
+![ContactUsP](./assets/images/fitur/contactus_1.png)
+![ContactUsP](./assets/images/fitur/contactus_2.png)
+
+### Admin Login Page
+
+![AdminLoginP](./assets/images/fitur/login.png)
+
+### Admin Dashboard Page
+
+![AdminDashboardP](./assets/images/fitur/dashboard.png)
