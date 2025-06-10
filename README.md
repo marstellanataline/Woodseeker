@@ -1,127 +1,41 @@
-# WOODSEEKER - Premium Furniture Website
+# Woodseeker
 
-Sebuah website profesional untuk bisnis furniture yang menyediakan berbagai macam perabotan berkualitas tinggi.
+## About
 
-## Struktur Proyek
+Woodseeker adalah website profil bisnis dan networking untuk bisnis bernama Woodseeker. Bisnis ini menyediakan layanan pemesanan dan jual beli barang yang terbuat dari kayu. Bisnis ditargetkan untuk B2C maupun B2B.
 
-```
-woodseeker/
-├── assets/
-│   ├── css/
-│   │   ├── admin.css
-│   │   ├── dashboard.css
-│   │   ├── forgot.css
-│   │   └── style.css
-│   ├── js/
-│   │   ├── dashboard.js
-│   │   ├── emailJS.js
-│   │   ├── formHandlerB2B.js
-│   │   ├── formHandlerContact.js
-│   │   └── script.js
-│   └── images/
-├── components/
-│   ├── header.html
-│   ├── footer.html
-│   ├── hero.html
-│   ├── catalog.html
-├── config/
-│   └── app.config.js
-├── data/
-│   └── products.json
-├── libs/
-├── pages/
-│   ├── about.html
-│   ├── b2b.html
-│   ├── catalog.html
-│   ├── contact.html
-│   ├── login.html
-│   ├── product-detail.html
-│   └── admin/
-│       ├── dashboard.html
-│       ├── forgot-password.html
-│       ├── login.html
-│       └── profile.html
-├── tests/
-│   └── app.test.js
-├── index.html
-├── LICENSE.md
-├── package.json
-└── README.md
-```
+## Tim Kami
+
+-   Marsya Hasna Khairunnisa (G6401231015) - UI/UX Designer, Frontend Developer
+-   Abdan Taris Hariri (G6401231049) - UI/UX Designer
+-   Adhiya Radhin Fasya (G6401231068) - Fullstack Developer
+-   Marstella Nataline Purba Siboro (G6401231101) - Fullstack Developer
+-   Yoga Cristopher Gulo (G6401231137) - Fullstack Developer
+
+## Diagram
+
+### Entity Relationship Diagram
+
+![ERD](./assets/images/diagram/ERD_fix.jpg)
+
+### Class Diagram
+
+![ClassD](./assets/images/diagram/ERD_fix.jpg)
+
+### Activity Diagram
+
+![ActivityD](./assets/images/diagram/ERD_fix.jpg)
+
+### Use Case Diagram
+
+![UseCaseD](./assets/images/diagram/ERD_fix.jpg)
 
 ## Fitur
 
-- Responsive design untuk semua device
-- Katalog produk dengan filter dan pencarian
-- Sistem login admin
-- Form pemesanan produk
-- Integrasi dengan Google Maps
-- Halaman B2B untuk kerjasama bisnis
-- Contact form untuk customer service
-- Halaman admin untuk mengelola produk dan profil
+### Welcome Page
 
-## Teknologi yang Digunakan
+![WelcomeP](./public/img/ss/Welcome.jpg)
 
-- HTML5
-- CSS3
-- JavaScript (Vanilla)
-- Google Maps API
-- Font Awesome Icons
+### Home Page
 
-## Cara Menjalankan Proyek
-
-1. Clone repository ini:
-```bash
-git clone [URL_REPOSITORY]
-```
-
-2. Masuk ke direktori proyek:
-```bash
-cd woodseeker
-```
-
-3. Jalankan dengan server lokal. Beberapa opsi:
-   - Menggunakan Python:
-     ```bash
-     python -m http.server
-     ```
-   - Menggunakan Node.js:
-     ```bash
-     npx serve
-     ```
-   - Menggunakan PHP:
-     ```bash
-     php -S localhost:8000
-     ```
-   - Atau gunakan extension Live Server di VS Code
-
-4. Buka browser dan akses:
-```
-http://localhost:8000
-```
-
-## Pengembangan
-
-1. Struktur komponen dipisahkan untuk memudahkan maintenance
-2. Gunakan BEM naming convention untuk CSS
-3. Ikuti JavaScript best practices dan ES6+ features
-4. Pastikan semua gambar dioptimasi sebelum di-upload
-5. Tambahkan unit test di folder `tests/`
-
-## Kontribusi
-
-1. Fork repository
-2. Buat branch baru (`git checkout -b fitur-baru`)
-3. Commit perubahan (`git commit -m 'Menambah fitur baru'`)
-4. Push ke branch (`git push origin fitur-baru`)
-5. Buat Pull Request
-
-## License
-
-MIT License - lihat file [LICENSE.md](LICENSE.md) untuk detail
-
-## Contact
-
-- Website: [www.woodseeker.com](http://www.woodseeker.com)
-- Email: info@woodseeker.com
-- Instagram: @woodseeker
+![HomeP](./public/img/ss/Home.jpg)
