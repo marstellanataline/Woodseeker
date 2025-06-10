@@ -54,8 +54,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-
-
 // Smooth scrolling for navigation links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
@@ -140,89 +138,6 @@ function prefillContactForm() {
         }
         // Clear the stored data
         sessionStorage.removeItem('productDetails');
-    }
-}
-
-// Function to load product details
-async function loadProductDetails(productId) {
-    try {
-        const response = await fetch('../data/products.json');
-        const data = await response.json();
-        // Find the product in the categories
-        let foundProduct = null;
-        for (const category of data.categories) {
-            const product = category.products.find(p => p.id === productId);
-            if (product) {
-                foundProduct = product;
-                break;
-            }
-        }
-
-        if (foundProduct) {
-            // Update page title
-            document.title = `${foundProduct.name} - WOODSEEKER`;
-
-            // Update product information
-            document.querySelector('.product-info h1').textContent = foundProduct.name;
-            document.querySelector('.product-info .price').textContent = `Rp ${foundProduct.price.toLocaleString()}`;
-
-            // Update meta information
-            const metaValues = document.querySelectorAll('.meta-item .value');
-            metaValues[0].textContent = foundProduct.category || '';
-
-            // Update main image
-            const mainImage = document.getElementById('mainImage');
-            if (mainImage) {
-                mainImage.src = `../assets/images/${foundProduct.image}`;
-                mainImage.alt = foundProduct.name;
-            }
-
-            // Update color options if available
-            if (foundProduct.colors && foundProduct.colors.length > 0) {
-                const colorOptions = document.querySelector('.color-options');
-                colorOptions.innerHTML = foundProduct.colors.map(color => `
-                    <label class="color-option">
-                        <input type="radio" name="color" value="${color}" ${color === foundProduct.colors[0] ? 'checked' : ''}>
-                        <span class="color-dot ${color}"></span>
-                        <span>${color.charAt(0).toUpperCase() + color.slice(1)}</span>
-                    </label>
-                `).join('');
-            }
-
-            // Update order button
-            const orderButton = document.querySelector('.buy-now');
-            if (orderButton) {
-                orderButton.onclick = () => handleOrderClick(foundProduct.name, foundProduct.category || '');
-            }
-
-            // Update specifications
-            const specsList = document.querySelector('.specs ul');
-            if (specsList) {
-                specsList.innerHTML = `
-                    <li><strong>Material:</strong> ${foundProduct.material || 'Solid Wood'}</li>
-                    <li><strong>Dimensions:</strong> ${foundProduct.dimensions ? 
-                        `${foundProduct.dimensions.width}cm x ${foundProduct.dimensions.depth}cm x ${foundProduct.dimensions.height}cm` 
-                        : 'N/A'}</li>
-                    <li><strong>Weight:</strong> ${foundProduct.weight || 'N/A'}</li>
-                `;
-            }
-
-            // Update description
-            const description = document.querySelector('.description p');
-            if (description) {
-                description.textContent = foundProduct.description;
-            }
-
-            // Update stock info
-            const stockStatus = document.querySelector('.stock-status');
-            if (stockStatus) {
-                const inStock = foundProduct.stock > 0;
-                stockStatus.className = `stock-status ${inStock ? 'in-stock' : 'out-of-stock'}`;
-                stockStatus.textContent = inStock ? 'In Stock' : 'Out of Stock';
-            }
-        }
-    } catch (error) {
-        console.error('Error loading product details:', error);
     }
 }
 

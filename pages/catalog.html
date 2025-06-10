@@ -49,6 +49,7 @@
   <script src="../assets/js/script.js"></script>
 
   <script>
+    const BASE_BACKEND_URL = 'https://woodseeker-backend.onrender.com'
     let currentCategory = '';
     let currentSearch = '';
     let allProducts = [];
@@ -73,7 +74,7 @@
 
     async function loadProducts() {
       try {
-        const response = await fetch('http://localhost:5000/api/products');
+        const response = await fetch('${BASE_BACKEND_URL}/api/products');
         const data = await response.json();
         console.log('DATA DARI SERVER:', data);
 

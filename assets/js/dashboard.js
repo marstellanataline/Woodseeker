@@ -2,6 +2,7 @@
 // Add these variables at the top of your script
 let hasUnsavedChanges = false;
 const originalData = { categories: [] };
+const BASE_BACKEND_URL = 'https://woodseeker-backend.onrender.com'
 
 // Check authentication
 window.onload = () => {
@@ -16,7 +17,7 @@ async function checkAuth() {
     }
 
     try {
-        const res = await fetch('http://localhost:5000/api/auth/verify', {
+        const res = await fetch('${BASE_BACKEND_URL}/api/auth/verify', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -66,7 +67,7 @@ function handleLogout() {
 // Load products from backend API, group by category, and display them
 async function loadProducts() {
     try {
-        const response = await fetch('http://localhost:5000/api/products');
+        const response = await fetch('${BASE_BACKEND_URL}/api/products');
         const products = await response.json();
         if (!response.ok) throw new Error('Gagal mengambil data produk dari server.');
 
@@ -219,7 +220,7 @@ async function handleAddProduct() {
         };
 
         try {
-            const response = await fetch('http://localhost:5000/api/products/add', {
+            const response = await fetch('${BASE_BACKEND_URL}/api/products/add', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -310,7 +311,7 @@ async function handleEditProduct(event) {
     // Ambil status produk yang sudah ada (jangan ubah status saat edit)
     let currentStatus = 'unlisted'; // default
     try {
-        const currentProductRes = await fetch(`http://localhost:5000/api/products/${productId}`);
+        const currentProductRes = await fetch(`${BASE_BACKEND_URL}/api/products/${productId}`);
         const currentProduct = await currentProductRes.json();
         currentStatus = currentProduct.status;
     } catch (err) {
@@ -342,7 +343,7 @@ async function handleEditProduct(event) {
     };
 
     try {
-        const response = await fetch(`http://localhost:5000/api/products/update/${productId}`, {
+        const response = await fetch(`${BASE_BACKEND_URL}/api/products/update/${productId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -497,7 +498,7 @@ function switchSection(section) {
 // Toggle product listing status
 async function toggleProductListing(productId, newListedStatus) {
     try {
-        const response = await fetch(`http://localhost:5000/api/products/${productId}/listing`, {
+        const response = await fetch(`${BASE_BACKEND_URL}/api/products/${productId}/listing`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -515,7 +516,7 @@ async function toggleProductListing(productId, newListedStatus) {
         if (card) card.remove();
 
         // Ambil data produk yang baru
-        const updatedProductRes = await fetch(`http://localhost:5000/api/products/${productId}`);
+        const updatedProductRes = await fetch(`${BASE_BACKEND_URL}/api/products/${productId}`);
         const updatedProduct = await updatedProductRes.json();
 
         // Tambahkan kartu baru ke lokasi yang sesuai
@@ -523,7 +524,7 @@ async function toggleProductListing(productId, newListedStatus) {
             ? document.getElementById('listedProductGrid')
             : document.getElementById('unlistedProductGrid');
 
-        const categoryData = await fetch(`http://localhost:5000/api/categories/${updatedProduct.category_id}`).then(res => res.json());
+        const categoryData = await fetch(`${BASE_BACKEND_URL}/api/categories/${updatedProduct.category_id}`).then(res => res.json());
         const categoryName = categoryData.category_name || categoryData.name || 'Lainnya';
         const newCard = createProductCard(updatedProduct, categoryName);
         targetGrid.appendChild(newCard);
@@ -567,7 +568,7 @@ let editColors = [];
 async function editProduct(productId) {
     try {
         // Ambil data produk dari backend
-        const response = await fetch(`http://localhost:5000/api/products/${productId}`);
+        const response = await fetch(`${BASE_BACKEND_URL}/api/products/${productId}`);
         if (!response.ok) throw new Error('Gagal mengambil data produk');
 
         const product = await response.json();
@@ -740,7 +741,7 @@ function saveEditProduct() {
         }
 
         // Misal endpoint backend untuk edit: /api/products/:id
-        fetch(`http://localhost:5000/api/products/${productId}`, {
+        fetch(`${BASE_BACKEND_URL}/api/products/${productId}`, {
             method: 'POST', // atau 'PUT' / 'PATCH' sesuai backend kamu
             body: formData
         })
@@ -792,7 +793,7 @@ function deleteProduct(productId) {
         const product = findProduct(productId);
 
         if (product) {
-            fetch(`http://localhost:5000/api/products/${productId}`, {
+            fetch(`${BASE_BACKEND_URL}/api/products/${productId}`, {
                 method: 'DELETE'
             })
                 .then(response => {

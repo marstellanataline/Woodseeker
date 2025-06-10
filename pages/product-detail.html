@@ -82,6 +82,8 @@
 
     <script src="../assets/js/script.js"></script>
     <script>
+        const BASE_BACKEND_URL = 'https://woodseeker-backend.onrender.com'
+
         document.addEventListener('DOMContentLoaded', function () {
             loadComponent('../components/header.html', 'header-container');
             loadComponent('../components/footer.html', 'footer-container');
@@ -111,7 +113,7 @@
 
         async function loadProductDetails(productId) {
             try {
-                const response = await fetch(`http://localhost:5000/api/products/${productId}`);
+                const response = await fetch(`${BASE_BACKEND_URL}/api/products/${productId}`);
                 if (!response.ok) throw new Error('Produk tidak ditemukan');
 
                 const product = await response.json();
