@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/woodseeker.git"
+    "url": "git+https://github.com/marstellanataline/Woodseeker.git"
   },
   "keywords": [
     "furniture",
@@ -33,9 +33,9 @@
   "author": "WOODSEEKER Team",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/yourusername/woodseeker/issues"
+    "url": "https://github.com/marstellanataline/Woodseeker/issues"
   },
-  "homepage": "https://github.com/yourusername/woodseeker#readme",
+  "homepage": "https://github.com/marstellanataline/Woodseeker#readme",
   "directories": {
     "test": "tests"
   },

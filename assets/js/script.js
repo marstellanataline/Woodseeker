@@ -71,9 +71,6 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-//b2b
-
-
 // Mobile menu toggle (to be implemented with additional HTML/CSS)
 function toggleMobileMenu() {
     const nav = document.querySelector('.nav-menu');
@@ -325,8 +322,6 @@ function createProductCard(product) {
         <img src="assets/images/${product.image}" alt="${product.name}">
         <div class="product-card-content">
             <h3>${product.name}</h3>
-            <p class="price">Rp ${product.price.toLocaleString()}</p>
-            <a href="pages/product-detail.html?id=${product.id}" class="btn-small">View Details</a>
         </div>
     `;
     return card;

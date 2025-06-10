@@ -20,9 +20,9 @@
         <div class="catalog-filters">
           <select id="category-filter">
             <option value="">All Categories</option>
-            <option value="meja">Meja</option>
-            <option value="kursi">Kursi</option>
-            <option value="lemari">Lemari</option>
+            <option value="Meja">Meja</option>
+            <option value="Kursi">Kursi</option>
+            <option value="Lemari">Lemari</option>
           </select>
           <div class="search-box">
             <input type="text" placeholder="Search products..." />
@@ -59,12 +59,14 @@
       loadProducts();
 
       document.getElementById('category-filter').addEventListener('change', function () {
-        currentCategory = this.value.toLowerCase();
+        currentCategory = this.value; // ← JANGAN toLowerCase() di sini
+        console.log('Selected category:', currentCategory); // Debug
         filterAndRender();
       });
 
       document.querySelector('.search-box input').addEventListener('input', function () {
         currentSearch = this.value.toLowerCase();
+        console.log('Search text:', currentSearch); // Debug
         filterAndRender();
       });
     });
@@ -90,11 +92,12 @@
 
         // Ubah jadi array of { id, name, products }
         allProducts = Object.entries(grouped).map(([name, products], index) => ({
-          id: name, // pakai nama kategori sebagai id
+          id: name, // pakai nama kategori sebagai id (EXACT case)
           name,
           products
         }));
 
+        console.log('All products grouped:', allProducts); // Debug
         filterAndRender();
       } catch (error) {
         console.error('Error loading products:', error);
@@ -105,12 +108,24 @@
       const grid = document.querySelector('.category-grid');
       grid.innerHTML = '';
 
+      console.log('Filtering with category:', currentCategory, 'search:', currentSearch); // Debug
+
       allProducts.forEach(category => {
-        const isCategoryMatch = !currentCategory || category.id === currentCategory;
+        // ← FIX: Perbaiki logika perbandingan kategori
+        const isCategoryMatch = !currentCategory ||
+          currentCategory === '' ||
+          currentCategory === 'all' ||
+          category.id === currentCategory;
+
+        console.log(`Category ${category.id}: match = ${isCategoryMatch}`); // Debug
 
         if (isCategoryMatch) {
           category.products.forEach(product => {
-            const nameMatch = product.name.toLowerCase().includes(currentSearch);
+            const nameMatch = !currentSearch ||
+              product.name.toLowerCase().includes(currentSearch);
+
+            console.log(`Product ${product.name}: nameMatch = ${nameMatch}`); // Debug
+
             if (nameMatch) {
               const card = createProductCard(product, category.id);
               grid.appendChild(card);
@@ -122,46 +137,50 @@
       if (grid.children.length === 0) {
         grid.innerHTML = '<p class="no-results">No products found.</p>';
       }
+
+      console.log('Total cards rendered:', grid.children.length); // Debug
     }
 
     function createProductCard(product, categoryId) {
       const card = document.createElement('div');
       card.className = 'category-card';
       card.innerHTML = `
-        <img src="../assets/images/${product.image}" alt="${product.name}">
-        <div class="card-content">
-          <h3>${product.name}</h3>
-          <p class="price">Rp ${product.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}</p>
-          <div class="color-options">
-            ${product.colors.map(color => `<span class="color-dot ${color}"></span>`).join('')}
+    <img src="../assets/images/${product.image}" alt="${product.name}">
+    <div class="card-content">
+      <h3>${product.name}</h3>
+      <p class="price">Rp ${product.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}</p>
+      <div class="color-options">
+  ${product.colors && product.colors.length > 0
+          ? product.colors.map(color => `<span class="color-dot ${color}"></span>`).join('')
+          : '<span class="no-colors">No color options</span>'}
+      </div>
+      <details class="product-details">
+        <summary>View Details</summary>
+        <div class="details-content">
+          <div class="specs">
+            <h4>Specifications</h4>
+            <ul>
+              <li><strong>Material:</strong> ${product.material || 'Solid Wood'}</li>
+              <li><strong>Dimensions:</strong> 
+                ${product.width && product.depth && product.height
+          ? `${product.width}cm x ${product.depth}cm x ${product.height}cm`
+          : 'N/A'}
+              </li>
+              <li><strong>Weight:</strong> ${product.weight || 'N/A'}</li>
+            </ul>
           </div>
-          <details class="product-details">
-            <summary>View Details</summary>
-            <div class="details-content">
-              <div class="specs">
-                <h4>Specifications</h4>
-                <ul>
-                  <li><strong>Material:</strong> ${product.material || 'Solid Wood'}</li>
-                  <li><strong>Dimensions:</strong> 
-                    ${product.width && product.depth && product.height
-                    ? `${product.width}cm x ${product.depth}cm x ${product.height}cm`
-                    : 'N/A'}
-                  </li>
-                  <li><strong>Weight:</strong> ${product.weight || 'N/A'}</li>
-                </ul>
-              </div>
-              <p class="description">${product.description}</p>
-              <div class="stock-info">
-                <span class="stock-status ${product.stock > 0 ? 'in-stock' : 'out-of-stock'}">
-                  ${product.stock > 0 ? 'In Stock' : 'Out of Stock'}
-                </span>
-                <span class="delivery-time">Estimated Delivery: 3-5 days</span>
-              </div>
-            </div>
-          </details>
-          <a href="product-detail.html?id=${product.product_id}" class="view-details">View Full Details</a>
+          <p class="description">${product.description}</p>
+          <div class="stock-info">
+            <span class="stock-status ${product.stock > 0 ? 'in-stock' : 'out-of-stock'}">
+              ${product.stock > 0 ? 'In Stock' : 'Out of Stock'}
+            </span>
+            <span class="delivery-time">Estimated Delivery: 3-5 days</span>
+          </div>
         </div>
-      `;
+      </details>
+      <a href="product-detail.html?id=${product.product_id}" class="view-details">View Full Details</a>
+    </div>
+  `;
 
       const details = card.querySelector('details');
       details.addEventListener('toggle', function () {

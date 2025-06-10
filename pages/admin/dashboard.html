@@ -24,10 +24,6 @@
                     <i class="fas fa-box"></i>
                     Katalog Produk
                 </a>
-                <a href="profile.html">
-                    <i class="fas fa-user"></i>
-                    Profil
-                </a>
             </nav>
             <button class="logout-btn" onclick="handleLogout()">
                 <i class="fas fa-sign-out-alt"></i>
@@ -87,10 +83,6 @@
                         <button class="section-tab active" onclick="switchSection('listed')">Ditampilkan</button>
                         <button class="section-tab" onclick="switchSection('unlisted')">Disembunyikan</button>
                     </div>
-                    <!-- <button class="save-changes-btn" onclick="saveChanges()" id="saveChangesBtn">
-                        <i class="fas fa-save"></i>
-                        Simpan Perubahan
-                    </button> -->
                 </div>
 
                 <div id="listedSection" class="section-content active">
@@ -104,25 +96,6 @@
                         <!-- Unlisted products will be loaded here -->
                     </div>
                 </div>
-
-                <!-- <div id="trashSection" class="section-content">
-                    <div class="trash-header">
-                        <button class="back-to-catalog" onclick="switchSection('listed')">
-                            <i class="fas fa-arrow-left"></i>
-                            Kembali ke Katalog
-                        </button>
-                        <h2>Tempat Sampah</h2>
-                    </div>
-                    <div class="product-grid" id="trashProductGrid">
-
-                    </div>
-                </div>
-
-
-                <button class="floating-trash-btn" onclick="switchSection('trash')" title="Tempat Sampah">
-                    <i class="fas fa-trash"></i>
-                    <span class="trash-count" id="trashCount">0</span>
-                </button> -->
             </div>
         </main>
     </div>
@@ -195,9 +168,10 @@
                             <div class="color-input-container">
                                 <select id="colorDropdown" class="form-control">
                                     <!-- Ini nanti diisi pakai JS atau server-side (PHP, Node, dll) -->
-                                    <option value="1" data-hex="#000000">Black</option>
-                                    <option value="2" data-hex="#808080">Gray</option>
-                                    <option value="3" data-hex="#A52A2A">Brown</option>
+                                    <option value="1" data-hex="#FFFFFF">White</option>
+                                    <option value="2" data-hex="#A52A2A">Brown</option>
+                                    <option value="3" data-hex="#808080">Gray</option>
+                                    <option value="4" data-hex="#000000">Black</option>
                                 </select>
                                 <button type="button" class="add-color-btn" onclick="addSelectedColor()"
                                     title="Tambah Warna">
@@ -214,10 +188,7 @@
                             <div class="file-input-wrapper">
                                 <input type="text" id="productImage" name="productImage" placeholder="Kursi.jpg"
                                     required>
-                                <!-- <input type="file" id="productImage" name="productImage" accept="image/*" required
-                                    onchange="previewImage(event)"> -->
                             </div>
-                            <!-- <div class="image-preview empty" id="imagePreview"></div> -->
                         </div>
                     </div>
 
@@ -306,9 +277,10 @@
                             <div class="color-input-container">
                                 <select id="editColorDropdown" class="form-control">
                                     <!-- Ini nanti diisi pakai JS atau server-side (PHP, Node, dll) -->
-                                    <option value="1" data-hex="#000000">Black</option>
-                                    <option value="2" data-hex="#808080">Gray</option>
-                                    <option value="3" data-hex="#A52A2A">Brown</option>
+                                    <option value="1" data-hex="#FFFFFF">White</option>
+                                    <option value="2" data-hex="#A52A2A">Brown</option>
+                                    <option value="3" data-hex="#808080">Gray</option>
+                                    <option value="4" data-hex="#000000">Black</option>
                                 </select>
                                 <button type="button" class="add-color-btn" onclick="addSelectedColorEdit()"
                                     title="Tambah Warna">
@@ -325,10 +297,7 @@
                             <div class="file-input-wrapper">
                                 <input type="text" id="editProductImage" name="productImage" placeholder="Kursi.jpeg"
                                     required>
-                                <!-- <input type="file" id="productImage" name="productImage" accept="image/*" required
-                                    onchange="previewImage(event)"> -->
                             </div>
-                            <!-- <div class="image-preview empty" id="imagePreview"></div> -->
                         </div>
                     </div>
 

@@ -162,16 +162,13 @@ function createProductCard(product, category) {
     return card;
 }
 
+// Update bagian dalam handleAddProduct() sebelum mengirim payload
 async function handleAddProduct() {
     const modal = document.getElementById('addProductModal');
     modal.classList.add('show');
 
     const form = document.getElementById('addProductForm');
     form.reset();
-
-    // const preview = document.getElementById('imagePreview');
-    // preview.style.backgroundImage = '';
-    // preview.classList.add('empty');
 
     colors = [];
     updateColorList();
@@ -189,13 +186,21 @@ async function handleAddProduct() {
         const width = parseFloat(document.getElementById('productWidth').value);
         const depth = parseFloat(document.getElementById('productDepth').value);
         const height = parseFloat(document.getElementById('productHeight').value);
-        const image = document.getElementById('productImage').value.trim(); // hanya ambil nama file
-        const selectedColors = [...colors];
+        const image = document.getElementById('productImage').value.trim();
 
         if (!name || isNaN(price) || isNaN(stock) || !category || !image) {
             alert('Mohon lengkapi semua data yang dibutuhkan.');
             return;
         }
+
+        // Konversi nama warna menjadi color ID (sama seperti di handleEditProduct)
+        const colorIds = colors.map(colorName => {
+            const dropdown = document.getElementById('colorDropdown'); // sesuaikan dengan ID dropdown Anda
+            const option = Array.from(dropdown.options).find(opt =>
+                opt.text.toLowerCase() === colorName.toLowerCase()
+            );
+            return option ? parseInt(option.value) : null;
+        }).filter(id => id !== null);
 
         const payload = {
             name,
@@ -208,9 +213,9 @@ async function handleAddProduct() {
             depth,
             height,
             image,
-            category_id: category, // pastikan ini ID, bukan nama!
-            status: "unlisted", // default unlisted
-            colors: selectedColors
+            category_id: category,
+            status: "unlisted",
+            colors: colorIds // Kirim array color ID, bukan nama warna
         };
 
         try {
@@ -242,8 +247,8 @@ async function handleAddProduct() {
                 depth,
                 height,
                 image,
-                colors: selectedColors,
-                listed: false // karena status = draft
+                colors: colors, // Simpan nama warna untuk UI
+                listed: false
             };
 
             let categoryFound = false;
@@ -359,210 +364,109 @@ async function handleEditProduct(event) {
     }
 }
 
-// // Product actions
-// async function addProduct() {
-//     const modal = document.getElementById('addProductModal');
-//     modal.classList.add('show');
-
-//     const form = document.getElementById('addProductForm');
-//     form.reset();
-
-//     const preview = document.getElementById('imagePreview');
-//     preview.style.backgroundImage = '';
-//     preview.classList.add('empty');
-
-//     colors = [];
-//     updateColorList();
-
-//     form.onsubmit = async function (e) {
-//         e.preventDefault();
-
-//         const formData = new FormData(form);
-//         formData.append('selectedColors', JSON.stringify(colors));
-//         console.log(formData)
-
-//         try {
-//             const response = await fetch('http://localhost:5000/api/products', {
-//                 method: 'POST',
-//                 body: formData
-//             });
-
-//             console.log(response)
-
-//             if (response.ok) {
-//                 alert('Produk berhasil ditambahkan.');
-//                 modal.classList.remove('show');
-//                 await loadProducts(); // Refresh tampilan
-//             } else {
-//                 const result = await response.json();
-//                 alert('Gagal menambahkan produk: ' + result.message);
-//             }
-//         } catch (err) {
-//             console.error('Error adding product:', err);
-//             alert('Terjadi kesalahan saat menambahkan produk.');
-//         }
-//     };
-// }
-
-// async function editProduct(id) {
-//     try {
-//         const response = await fetch(`http://localhost:5000/api/products/${id}`);
-//         const product = await response.json();
-
-//         // Isi modal edit dengan data produk
-//         const modal = document.getElementById('editProductModal');
-//         modal.classList.add('show');
-
-//         const form = document.getElementById('editProductForm');
-//         form.product_id.value = product.product_id;
-//         form.name.value = product.name;
-//         form.price.value = product.price;
-//         form.stock.value = product.stock;
-//         form.description.value = product.description;
-//         form.category_id.value = product.category_id;
-
-//         // Update preview gambar
-//         const preview = document.getElementById('editImagePreview');
-//         preview.style.backgroundImage = `url('../../assets/images/${product.image}')`;
-//         preview.classList.remove('empty');
-
-//         colors = product.colors || [];
-//         updateEditColorList();
-
-//         // Submit handler
-//         form.onsubmit = async function (e) {
-//             e.preventDefault();
-//             const formData = new FormData(form);
-//             formData.append('selectedColors', JSON.stringify(colors));
-
-//             try {
-//                 const updateRes = await fetch(`http://localhost:5000/api/products/${id}`, {
-//                     method: 'PUT',
-//                     body: formData
-//                 });
-
-//                 if (updateRes.ok) {
-//                     alert('Produk berhasil diupdate.');
-//                     modal.classList.remove('show');
-//                     await loadProducts();
-//                 } else {
-//                     const result = await updateRes.json();
-//                     alert('Gagal mengupdate produk: ' + result.message);
-//                 }
-//             } catch (err) {
-//                 console.error('Error updating product:', err);
-//                 alert('Terjadi kesalahan saat mengupdate produk.');
-//             }
-//         };
-
-//     } catch (err) {
-//         console.error('Gagal mengambil data produk untuk edit:', err);
-//     }
-// }
-
-// async function deleteProduct(id) {
-
-//     if (confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
-//         try {
-//             const response = await fetch(`http://localhost:5000/api/products/${id}`, {
-//                 method: 'DELETE'
-//             });
-
-//             console.log(response)
-
-//             if (response.ok) {
-//                 alert('Produk berhasil dihapus.');
-//                 await loadProducts(); // Refresh tampilan
-//             } else {
-//                 const result = await response.json();
-//                 alert('Gagal menghapus produk: ' + result.message);
-//             }
-//         } catch (err) {
-//             console.error('Error deleting product:', err);
-//             alert('Terjadi kesalahan saat menghapus produk.');
-//         }
-//     }
-// }
-
-// Search and filter
-function searchProducts(value) {
-    const cards = document.querySelectorAll('.product-card');
-    cards.forEach(card => {
-        const title = card.querySelector('.product-title').textContent.toLowerCase();
-        const category = card.querySelector('.product-category').textContent.toLowerCase();
-        const searchText = value.toLowerCase();
-
-        card.style.display = title.includes(searchText) || category.includes(searchText) ? '' : 'none';
-    });
-}
-
-function filterByCategory(category) {
-    const cards = document.querySelectorAll('.product-card');
-    cards.forEach(card => {
-        const cardCategory = card.querySelector('.product-category').textContent.toLowerCase();
-        card.style.display = !category || cardCategory === category ? '' : 'none';
-    });
-}
-
 // Add Product Modal Functions
 function closeAddProductModal() {
     document.getElementById('addProductModal').classList.remove('show');
 }
 
-function previewImage(event) {
-    const file = event.target.files[0];
-    const preview = document.getElementById('imagePreview');
-
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            preview.style.backgroundImage = `url(${e.target.result})`;
-            preview.classList.remove('empty');
-        }
-        reader.readAsDataURL(file);
-    } else {
-        preview.style.backgroundImage = '';
-        preview.classList.add('empty');
-    }
-}
 
 // Color management
-let selectedColors = [];
+// Pastikan variabel colors sudah dideklarasikan di bagian atas file
+let colors = [];
 
-function addSelectedColorEdit() {
-    const dropdown = document.getElementById('editColorDropdown');
+// Fungsi untuk menambah warna pada form tambah produk baru
+function addSelectedColor() {
+    const dropdown = document.getElementById('colorDropdown');
     const selectedOption = dropdown.options[dropdown.selectedIndex];
-
-    const colorData = {
-        color_id: parseInt(selectedOption.value),
-        name: selectedOption.text,
-        hex: selectedOption.getAttribute('data-hex')
-    };
-
-    // Cek duplikat
-    if (!editColors.find(c => c.color_id === colorData.color_id)) {
-        editColors.push(colorData);  // ← Push object, bukan string
+    
+    if (!selectedOption || !selectedOption.value) {
+        alert('Pilih warna terlebih dahulu!');
+        return;
     }
+    
+    const colorName = selectedOption.text.toLowerCase(); // lowercase untuk cocokkan dengan backend
+    const colorValue = selectedOption.getAttribute('data-hex');
+    const colorId = selectedOption.value;
 
-    // Update UI juga kalau perlu
-    updateEditColorDisplay();
+    if (colorName && colorValue) {
+        // Cek apakah warna sudah ada (by name lowercase)
+        if (!colors.includes(colorName)) {
+            colors.push(colorName);
+            updateColorList();
+            
+            // Reset dropdown ke pilihan pertama
+            dropdown.selectedIndex = 0;
+        } else {
+            alert('Warna sudah dipilih!');
+        }
+    }
 }
 
-function removeColor(index) {
-    selectedColors.splice(index, 1);
-    updateColorList();
-}
-
+// Fungsi untuk update tampilan daftar warna - sesuai dengan HTML yang ada
 function updateColorList() {
-    const colorList = document.getElementById('colorList');
-    colorList.innerHTML = selectedColors.map((color, index) => `
-        <div class="color-item">
-            <div class="color-preview" style="background-color: ${color.hex}"></div>
-            <span>${color.name}</span>
-            <button type="button" onclick="removeColor(${index})">&times;</button>
-            <input type="hidden" name="warna_id[]" value="${color.id}">
-        </div>
-    `).join('');
+    const colorListContainer = document.getElementById('colorList'); // Sesuai dengan HTML
+    
+    if (!colorListContainer) {
+        console.warn('Element colorList tidak ditemukan');
+        return;
+    }
+    
+    // Kosongkan container
+    colorListContainer.innerHTML = '';
+    
+    // Jika tidak ada warna yang dipilih
+    if (colors.length === 0) {
+        colorListContainer.innerHTML = '<p class="no-colors">Belum ada warna dipilih</p>';
+        return;
+    }
+    
+    // Tampilkan setiap warna yang dipilih
+    colors.forEach((colorName, index) => {
+        // Ambil data hex dari dropdown untuk tampilan
+        const dropdown = document.getElementById('colorDropdown');
+        const option = Array.from(dropdown.options).find(opt => 
+            opt.text.toLowerCase() === colorName.toLowerCase()
+        );
+        const hexColor = option ? option.getAttribute('data-hex') : '#007bff';
+        
+        const colorItem = document.createElement('div');
+        colorItem.className = 'selected-color-item';
+        colorItem.style.cssText = `
+            display: inline-flex; 
+            align-items: center; 
+            background-color: ${hexColor}; 
+            color: ${hexColor === '#000000' || hexColor === '#A52A2A' ? 'white' : 'black'};
+            padding: 6px 12px; 
+            margin: 3px; 
+            border-radius: 20px; 
+            font-size: 13px;
+            border: 1px solid #ddd;
+        `;
+        
+        colorItem.innerHTML = `
+            <span class="color-name" style="margin-right: 8px; text-transform: capitalize;">${colorName}</span>
+            <button type="button" class="remove-color-btn" onclick="removeColor(${index})" 
+                style="background: none; border: none; color: inherit; cursor: pointer; font-size: 16px; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-left: 4px;"
+                title="Hapus warna">
+                ×
+            </button>
+        `;
+        
+        colorListContainer.appendChild(colorItem);
+    });
+    
+    // Tambahkan info jumlah warna
+    const countInfo = document.createElement('div');
+    countInfo.className = 'color-count-info';
+    countInfo.style.cssText = 'margin-top: 8px; font-size: 12px; color: #666;';
+    countInfo.textContent = `${colors.length} warna dipilih`;
+    colorListContainer.appendChild(countInfo);
+}
+
+// Fungsi untuk menghapus warna dari daftar
+function removeColor(index) {
+    colors.splice(index, 1);
+    updateColorList();
 }
 
 // Switch between Listed and Unlisted sections
@@ -650,66 +554,6 @@ function findProduct(productId) {
     return null;
 }
 
-// // Save product to unlisted section
-// function saveProduct() {
-//     const form = document.getElementById('addProductForm');
-//     if (form.checkValidity()) {
-//         const newProductId = 'product_' + new Date().getTime();
-
-//         const fileInput = document.getElementById('productImage');
-//         const fileName = fileInput.files[0] ? fileInput.files[0].name : '';
-
-//         const name = document.getElementById('productName').value.trim();
-//         const price = parseInt(document.getElementById('productPrice').value);
-//         const description = document.getElementById('productDescription').value.trim();
-//         const category = document.getElementById('productCategory').value.trim();
-
-//         // Validasi tambahan
-//         if (!name || isNaN(price) || price < 0 || !category) {
-//             alert('Mohon isi semua data dengan benar.');
-//             return;
-//         }
-
-//         const productData = {
-//             id: newProductId,
-//             name,
-//             price,
-//             image: fileName,
-//             colors: [...selectedColors], // Hindari referensi langsung
-//             description,
-//             listed: false
-//         };
-
-//         let categoryFound = false;
-//         for (const cat of window.productsData.categories) {
-//             if (cat.name === category) {
-//                 cat.products.push(productData);
-//                 categoryFound = true;
-//                 break;
-//             }
-//         }
-
-//         if (!categoryFound) {
-//             window.productsData.categories.push({
-//                 name: category,
-//                 products: [productData]
-//             });
-//         }
-
-//         // Reset form dan UI
-//         form.reset();
-//         selectedColors = [];
-//         updateColorList();
-
-//         loadProducts();
-//         closeAddProductModal();
-//         switchSection('unlisted');
-//         alert('Produk berhasil ditambahkan ke Disembunyikan!');
-//     } else {
-//         form.reportValidity();
-//     }
-// }
-
 // Close modal when clicking outside
 document.getElementById('addProductModal').addEventListener('click', function (event) {
     if (event.target === this) {
@@ -766,69 +610,105 @@ async function editProduct(productId) {
 function closeEditProductModal() {
     document.getElementById('editProductModal').classList.remove('show');
     document.getElementById('editProductForm').reset();
-    // document.getElementById('editImagePreview').style.backgroundImage = '';
-    // document.getElementById('editImagePreview').classList.add('empty');
 
     editColors = []; // RESET
     updateEditColorList();
 }
 
+// Fungsi untuk menambah warna pada form edit produk
 function addSelectedColorEdit() {
     const dropdown = document.getElementById('editColorDropdown');
     const selectedOption = dropdown.options[dropdown.selectedIndex];
+    
+    if (!selectedOption || !selectedOption.value) {
+        alert('Pilih warna terlebih dahulu!');
+        return;
+    }
+    
     const colorName = selectedOption.text.toLowerCase(); // lowercase untuk cocokkan dengan backend
     const colorValue = selectedOption.getAttribute('data-hex');
+    const colorId = selectedOption.value;
 
     if (colorName && colorValue) {
         // Cek apakah warna sudah ada (by name lowercase)
         if (!editColors.includes(colorName)) {
             editColors.push(colorName);
             updateEditColorList();
+            
+            // Reset dropdown ke pilihan pertama
+            dropdown.selectedIndex = 0;
+        } else {
+            alert('Warna sudah dipilih!');
         }
     }
 }
 
+// Fungsi untuk update tampilan daftar warna edit - style yang sama dengan add
+function updateEditColorList() {
+    const colorListContainer = document.getElementById('editColorList');
+    
+    if (!colorListContainer) {
+        console.warn('Element editColorList tidak ditemukan');
+        return;
+    }
+    
+    // Kosongkan container
+    colorListContainer.innerHTML = '';
+    
+    // Jika tidak ada warna yang dipilih
+    if (editColors.length === 0) {
+        colorListContainer.innerHTML = '<p class="no-colors">Belum ada warna dipilih</p>';
+        return;
+    }
+    
+    // Tampilkan setiap warna yang dipilih
+    editColors.forEach((colorName, index) => {
+        // Ambil data hex dari dropdown untuk tampilan
+        const dropdown = document.getElementById('editColorDropdown');
+        const option = Array.from(dropdown.options).find(opt => 
+            opt.text.toLowerCase() === colorName.toLowerCase()
+        );
+        const hexColor = option ? option.getAttribute('data-hex') : '#007bff';
+        
+        const colorItem = document.createElement('div');
+        colorItem.className = 'selected-color-item';
+        colorItem.style.cssText = `
+            display: inline-flex; 
+            align-items: center; 
+            background-color: ${hexColor}; 
+            color: ${hexColor === '#000000' || hexColor === '#A52A2A' ? 'white' : 'black'};
+            padding: 6px 12px; 
+            margin: 3px; 
+            border-radius: 20px; 
+            font-size: 13px;
+            border: 1px solid #ddd;
+        `;
+        
+        colorItem.innerHTML = `
+            <span class="color-name" style="margin-right: 8px; text-transform: capitalize;">${colorName}</span>
+            <button type="button" class="remove-color-btn" onclick="removeEditColor(${index})" 
+                style="background: none; border: none; color: inherit; cursor: pointer; font-size: 16px; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-left: 4px;"
+                title="Hapus warna">
+                ×
+            </button>
+        `;
+        
+        colorListContainer.appendChild(colorItem);
+    });
+    
+    // Tambahkan info jumlah warna
+    const countInfo = document.createElement('div');
+    countInfo.className = 'color-count-info';
+    countInfo.style.cssText = 'margin-top: 8px; font-size: 12px; color: #666;';
+    countInfo.textContent = `${editColors.length} warna dipilih`;
+    colorListContainer.appendChild(countInfo);
+}
+
+// Fungsi untuk menghapus warna dari daftar edit
 function removeEditColor(index) {
     editColors.splice(index, 1);
     updateEditColorList();
 }
-
-function updateEditColorList() {
-    const colorList = document.getElementById('editColorList');
-
-    // Konversi warna menjadi { name, value } untuk keperluan tampilan
-    colorList.innerHTML = editColors.map((colorName, index) => {
-        const option = [...document.getElementById('editColorDropdown').options]
-            .find(opt => opt.text.toLowerCase() === colorName);
-
-        const colorHex = option ? option.getAttribute('data-hex') : '#000'; // fallback hitam
-
-        return `
-            <div class="color-item">
-                <div class="color-preview" style="background-color: ${colorHex}"></div>
-                <span>${colorName}</span>
-                <button type="button" onclick="removeEditColor(${index})">&times;</button>
-            </div>
-        `;
-    }).join('');
-}
-
-// function previewEditImage(event) {
-//     const file = event.target.files[0];
-//     const preview = document.getElementById('editImagePreview');
-
-//     if (file) {
-//         const reader = new FileReader();
-//         reader.onload = function (e) {
-//             preview.style.backgroundImage = `url(${e.target.result})`;
-//             preview.classList.remove('empty');
-//         }
-//         reader.readAsDataURL(file);
-//     } else {
-//         preview.style.backgroundImage = '';
-//         preview.classList.add('empty');
-//     }
-// }
 
 function saveEditProduct() {
     const form = document.getElementById('editProductForm');
@@ -944,210 +824,6 @@ function deleteProduct(productId) {
     }
 }
 
-// // Update trash count
-// function updateTrashCount() {
-//     const count = window.trashedProducts.length;
-//     const trashCount = document.getElementById('trashCount');
-//     trashCount.textContent = count;
-//     trashCount.style.display = count > 0 ? 'flex' : 'none';
-// }
-
-// // Create trash product card
-// function createTrashProductCard(product) {
-//     const card = document.createElement('div');
-//     card.className = 'product-card';
-//     card.innerHTML = `
-//                 <img src="../../assets/images/${product.image}" alt="${product.name}" class="product-image">
-//                 <div class="product-content">
-//                     <div class="product-header">
-//                         <h3 class="product-title">${product.name}</h3>
-//                     </div>
-//                     <div class="product-category">${product.category}</div>
-//                     <div class="product-price">Rp ${formatPrice(product.price)}</div>
-//                     <div class="trash-actions">
-//                         <button class="action-btn restore-btn" onclick="restoreProduct('${product.id}')">
-//                             <i class="fas fa-undo"></i>
-//                             Kembalikan
-//                         </button>
-//                         <button class="action-btn permanent-delete-btn" onclick="permanentDelete('${product.id}')">
-//                             <i class="fas fa-trash"></i>
-//                             Hapus Permanen
-//                         </button>
-//                     </div>
-//                 </div>
-//             `;
-//     return card;
-// }
-
-// // Restore product from trash
-// function restoreProduct(productId) {
-//     const productIndex = window.trashedProducts.findIndex(p => p.id === productId);
-//     if (productIndex !== -1) {
-//         const product = window.trashedProducts[productIndex];
-
-//         fetch(`http://localhost:5000/api/products/${productId}/restore`, {
-//             method: 'PATCH'
-//         })
-//             .then(response => {
-//                 if (!response.ok) throw new Error('Gagal mengembalikan produk');
-//                 return response.json();
-//             })
-//             .then(restoredProduct => {
-//                 // Hapus dari trash lokal
-//                 window.trashedProducts.splice(productIndex, 1);
-
-//                 // Tambahkan kembali ke data
-//                 const category = window.productsData.categories.find(c => c.name === restoredProduct.category);
-//                 if (category) {
-//                     category.products.push(restoredProduct);
-//                 }
-
-//                 loadProducts();
-//                 loadTrashProducts();
-//                 updateTrashCount();
-//                 alert('Produk berhasil dikembalikan ke Disembunyikan');
-//             })
-//             .catch(error => {
-//                 console.error(error);
-//                 alert('Terjadi kesalahan saat mengembalikan produk');
-//             });
-
-//         // Update UI
-//         loadProducts();
-//         loadTrashProducts();
-//         updateTrashCount();
-//         alert('Produk berhasil dikembalikan ke Disembunyikan');
-//     }
-// }
-
-// // Permanent delete
-// function permanentDelete(productId) {
-//     if (confirm('Apakah Anda yakin ingin menghapus produk ini secara permanen? Tindakan ini tidak dapat dibatalkan.')) {
-//         fetch(`http://localhost:5000/api/products/${productId}/permanent`, {
-//             method: 'DELETE'
-//         })
-//             .then(response => {
-//                 if (!response.ok) throw new Error('Gagal menghapus permanen');
-//                 return response.json();
-//             })
-//             .then(() => {
-//                 window.trashedProducts = window.trashedProducts.filter(p => p.id !== productId);
-//                 loadTrashProducts();
-//                 updateTrashCount();
-//                 alert('Produk telah dihapus secara permanen');
-//             })
-//             .catch(error => {
-//                 console.error(error);
-//                 alert('Terjadi kesalahan saat menghapus produk');
-//             });
-//     }
-// }
-// // Load trash products dari backend
-// async function loadTrashProducts() {
-//     const trashGrid = document.getElementById('trashProductGrid');
-//     trashGrid.innerHTML = '';
-
-//     try {
-//         const response = await fetch('http://localhost:5000/api/products/trash'); // misal endpoint backend untuk data trash
-//         if (!response.ok) throw new Error('Gagal mengambil data tempat sampah');
-//         const trashedProducts = await response.json();
-
-//         if (trashedProducts.length === 0) {
-//             trashGrid.innerHTML = '<div class="empty-trash">Tempat sampah kosong</div>';
-//             return;
-//         }
-
-//         trashedProducts.forEach(product => {
-//             const card = createTrashProductCard(product);
-//             trashGrid.appendChild(card);
-//         });
-//     } catch (error) {
-//         console.error(error);
-//         trashGrid.innerHTML = '<div class="error">Gagal memuat data tempat sampah</div>';
-//     }
-// }
-
-// // Tandai ada perubahan belum disimpan
-// function markUnsavedChanges() {
-//     hasUnsavedChanges = true;
-//     const saveBtn = document.getElementById('saveChangesBtn');
-//     if (!saveBtn.querySelector('.unsaved-indicator')) {
-//         saveBtn.innerHTML += '<span class="unsaved-indicator"></span>';
-//     }
-// }
-
-// // Simpan perubahan ke backend
-// async function saveChanges() {
-//     const saveBtn = document.getElementById('saveChangesBtn');
-
-//     if (saveBtn.classList.contains('saving')) {
-//         return;
-//     }
-
-//     try {
-//         saveBtn.classList.add('saving');
-//         saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
-
-//         // Color mapping (sesuaikan dengan database Anda)
-//         const colorMapping = {
-//             'white': 1,
-//             'brown': 2,
-//             'black': 3,
-//             'grey': 4,
-//             // ... tambahkan mapping lainnya
-//         };
-
-//         const allProducts = [];
-//         window.productsData.categories.forEach(category => {
-//             category.products.forEach(product => {
-//                 // Hapus field yang tidak perlu untuk backend
-//                 const { category_name, ...cleanProduct } = product;
-
-//                 const transformedProduct = {
-//                     ...cleanProduct,
-//                     colors: product.colors.map(colorName => colorMapping[colorName]).filter(id => id)
-//                 };
-//                 allProducts.push(transformedProduct);
-//             });
-//         });
-
-//         console.log('📊 Status produk yang akan disimpan:');
-//         allProducts.forEach(product => {
-//             console.log(`- ${product.name}: ${product.status}`);
-//         });
-//         console.log('Produk setelah transform:', allProducts[0]);
-
-//         // DEBUG: Lihat struktur produk pertama
-//         console.log('Total produk:', allProducts.length);
-//         console.log('Struktur produk pertama:', allProducts[0]);
-//         console.log('Field yang ada:', Object.keys(allProducts[0]));
-
-//         const response = await fetch('http://localhost:5000/api/products/update-many', {
-//             method: 'PUT',
-//             headers: { 'Content-Type': 'application/json' },
-//             body: JSON.stringify(allProducts) // Kirim array produk
-//         });
-
-//         if (!response.ok) {
-//             const errorText = await response.text();
-//             console.log('Server error response:', errorText);
-//             throw new Error(`Gagal menyimpan perubahan: ${errorText}`);
-//         }
-
-//         hasUnsavedChanges = false;
-//         const indicator = saveBtn.querySelector('.unsaved-indicator');
-//         if (indicator) indicator.remove();
-
-//         alert('Perubahan berhasil disimpan!');
-//     } catch (error) {
-//         console.error('Error saving changes:', error);
-//         alert('Gagal menyimpan perubahan. Silakan coba lagi.');
-//     } finally {
-//         saveBtn.classList.remove('saving');
-//         saveBtn.innerHTML = '<i class="fas fa-save"></i> Simpan Perubahan';
-//     }
-// }
-
 // Peringatan ketika meninggalkan halaman ada perubahan belum disimpan
 window.addEventListener('beforeunload', (e) => {
     if (hasUnsavedChanges) {
@@ -1156,7 +832,7 @@ window.addEventListener('beforeunload', (e) => {
     }
 });
 
-// diperbaiki
+// Event listeners untuk search dan filter
 document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('productSearch');
     const categorySelect = document.getElementById('categoryFilter');
@@ -1184,5 +860,68 @@ function filterDashboardProducts(searchTerm, selectedCategory) {
 
         card.style.display = isMatch ? '' : 'none';
     });
+    
+    // Check for no results and show message
+    checkDashboardNoResults();
 }
+
+function checkDashboardNoResults() {
+    const productCards = document.querySelectorAll('.product-card');
+    const visibleCards = Array.from(productCards).filter(card => 
+        card.style.display !== 'none'
+    );
+    
+    // Remove existing no results message
+    const existingMessage = document.querySelector('.no-results-dashboard');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    // Add no results message if no visible cards
+    if (visibleCards.length === 0) {
+        // Find the best container for the message
+        const container = document.querySelector('.products-container') || 
+                         document.querySelector('.dashboard-content') ||
+                         document.querySelector('.products-grid') ||
+                         document.querySelector('.container') ||
+                         document.body;
+        
+        const noResultsDiv = document.createElement('div');
+        noResultsDiv.className = 'no-results-dashboard';
+        noResultsDiv.innerHTML = `
+            <div style="
+                text-align: center; 
+                padding: 40px 20px; 
+                color: #666;
+                font-size: 16px;
+                background: #f8f9fa;
+                border-radius: 8px;
+                margin: 20px;
+                border: 1px solid #e9ecef;
+            ">
+                <div style="margin-bottom: 16px;">
+                    <svg width="48" height="48" fill="currentColor" viewBox="0 0 24 24" style="opacity: 0.4;">
+                        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                    </svg>
+                </div>
+                <p style="margin: 0; font-weight: 600;">No Products Found</p>
+                <p style="margin: 8px 0 0 0; font-size: 14px; color: #888;">
+                    Try adjusting your search terms or category filter
+                </p>
+            </div>
+        `;
+        
+        // Insert the message in the best location
+        if (productCards.length > 0) {
+            // Insert after the last product card's parent container
+            const firstCard = productCards[0];
+            const cardContainer = firstCard.parentElement;
+            cardContainer.appendChild(noResultsDiv);
+        } else {
+            // Fallback: append to main container
+            container.appendChild(noResultsDiv);
+        }
+    }
+}
+
 
