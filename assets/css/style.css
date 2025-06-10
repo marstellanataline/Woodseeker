@@ -493,7 +493,7 @@ select option {
 .catalog-header {
     margin-top: 80px;
     padding: 4rem 0;
-    background-image: url('../images/catalog.jpg');
+    background-image: url('../images/fotodepanslide3.JPG');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -784,7 +784,7 @@ main {
 .contact {
     flex: 1;
     padding: 6rem 0 0;
-    background-image: url('../images/image.png');
+    background-image: url('../images/fotodepanslide1.JPG');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
